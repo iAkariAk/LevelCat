@@ -35,7 +35,6 @@ fun LevelcatNavHost(modifier: Modifier = Modifier) {
                 }
             }
         }
-
     }
 }
 

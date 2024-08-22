@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalFoundationApi::class, FlowPreview::class)
+@file:OptIn(ExperimentalFoundationApi::class, FlowPreview::class, ExperimentalMaterial3Api::class)
 
 package com.akari.levelcat.ui.home
 
@@ -13,18 +13,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -181,7 +178,7 @@ private fun ProjectItem(
     var newName by remember { mutableStateOf(item.name) }
     var isEditEnabled by remember { mutableStateOf(false) }
 
-    Card(
+    OutlinedCard(
         modifier = modifier.combinedClickable(
             onClick = onOpenProject,
             onLongClick = { }
@@ -193,21 +190,9 @@ private fun ProjectItem(
                 .padding(2.dp)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                BasicTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .combinedClickable(onClick = {}, onLongClick = {
-                            isEditEnabled = true
-                        }),
-                    value = newName,
-                    enabled = isEditEnabled,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        onRenameProject(newName)
-                        isEditEnabled = false
-                    }),
-                    onValueChange = { newName = it },
-                    textStyle = MaterialTheme.typography.titleLarge,
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleLarge
                 )
 
                 Text(
@@ -217,7 +202,7 @@ private fun ProjectItem(
                         }
                         append(item.creator)
                     },
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
             IconButton(

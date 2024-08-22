@@ -1,9 +1,11 @@
 package com.akari.levelcat.integratedlevel.model
 
+import androidx.compose.runtime.Stable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Stable
 data class Level(
     @SerialName("Version")
     val version: Int = VERSION,

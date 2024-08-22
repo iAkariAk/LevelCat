@@ -1,8 +1,10 @@
 package com.akari.levelcat.data.model
 
+import androidx.compose.runtime.Stable
 import com.akari.levelcat.integratedlevel.model.Level
 import com.akari.levelcat.integratedlevel.model.LevelProperty
 
+@Stable
 data class Project(
     val id: Long,
     val name: String,
