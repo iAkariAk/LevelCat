@@ -1,4 +1,4 @@
-package com.akari.levelcat.integratedlevel
+package com.akari.levelcat.level.util
 
 import kotlinx.serialization.json.Json
 

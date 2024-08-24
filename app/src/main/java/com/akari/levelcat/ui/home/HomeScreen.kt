@@ -42,9 +42,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.akari.levelcat.data.model.Project
-import com.akari.levelcat.integratedlevel.model.Level
+import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.ui.LevelcatTopAppBar
-import com.akari.levelcat.ui.navigation.LocalLevelNavController
+import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
 import com.akari.levelcat.ui.util.formatMillisecondAsI18nString
 import kotlinx.coroutines.FlowPreview
@@ -54,7 +54,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val navController = LocalLevelNavController.current
+    val navController = LocalNavController.current
     val homeUiState by viewModel.uiState.collectAsState()
 
     Scaffold(

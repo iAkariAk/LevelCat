@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.akari.levelcat.data.model.Project
-import com.akari.levelcat.integratedlevel.model.Level
+import com.akari.levelcat.level.model.Level
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 

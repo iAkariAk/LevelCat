@@ -2,7 +2,6 @@
 
 package com.akari.levelcat.ui.editor
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,31 +14,52 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.akari.levelcat.integratedlevel.model.LevelProperty
-import com.akari.levelcat.integratedlevel.ui.CoffeeCat
+import com.akari.levelcat.level.model.component.Editor
+import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.ui.LevelcatTopAppBar
-import com.akari.levelcat.ui.navigation.LocalLevelNavController
+import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
+import com.akari.levelcat.util.logger
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditorScreen(
     modifier: Modifier = Modifier,
     viewModel: EditorViewModel = hiltViewModel(),
 ) {
-    val navController = LocalLevelNavController.current
+    val navController = LocalNavController.current
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val editorUiState = viewModel.editorUiState
     val level = editorUiState.project.level
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LevelcatTopAppBar(
                 destination = NavigationDestination.Editor,
-                navigateUp = navController::navigateUp,
+                navigateUp = {
+                    coroutineScope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Are you to exit without save ?",
+                            duration = SnackbarDuration.Indefinite,
+                            withDismissAction = true
+                        )
+                        if (result == SnackbarResult.Dismissed) {
+                            navController.navigateUp()
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = viewModel::save) {
                         Icon(Icons.Outlined.Save, contentDescription = "save")
@@ -58,14 +78,13 @@ fun EditorScreen(
 
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             items(level.components) { component ->
-                val cat = remember { CoffeeCat.fromClass(component::class) }
-                cat.Editor(
+                Editor(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp),
-                    componet = component,
+                    component = component,
                     onComponentChange = {
-                        Log.d("EditorScreen", "onComponentChange: $it")
+                        logger.info("onComponentChange: $it")
                         viewModel.updateComponent(it)
                     },
                     onComponentDelete = { viewModel.removeComponent(component) }

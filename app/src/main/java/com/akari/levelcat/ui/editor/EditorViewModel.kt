@@ -2,6 +2,7 @@
 
 package com.akari.levelcat.ui.editor
 
+import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,13 +12,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.data.repository.ProjectRepository
-import com.akari.levelcat.integratedlevel.model.Component
+import com.akari.levelcat.level.model.component.Component
 import com.akari.levelcat.ui.navigation.ARG_EDITOR_ID
+import com.akari.levelcat.util.logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.ticker
-import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,14 +35,20 @@ class EditorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            editorUiState = EditorUiState(project.last())
-
-            ticker(5000).consumeEach { save() }
+            project.collectLatest { project ->
+                editorUiState = EditorUiState(project)
+                Log.d("EditorViewModel", "editorUiState: $editorUiState")
+            }
+            launch {
+                ticker(5000).consumeEach { save() }
+            }
         }
     }
 
 
     fun addComponent(component: Component) = viewModelScope.launch {
+        Log.d("EditorViewModel", "editorUiState: $editorUiState")
+
         val newCOmponents = editorUiState.project.level.components + component
         editorUiState = editorUiState.copy(
             editorUiState.project.copy(
@@ -75,6 +83,7 @@ class EditorViewModel @Inject constructor(
 
     fun save() = viewModelScope.launch {
         projectRepository.updateProject(editorUiState.project)
+        logger.debug("Save: ${editorUiState.project}")
     }
 
 

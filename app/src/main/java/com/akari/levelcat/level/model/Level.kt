@@ -1,6 +1,7 @@
-package com.akari.levelcat.integratedlevel.model
+package com.akari.levelcat.level.model
 
 import androidx.compose.runtime.Stable
+import com.akari.levelcat.level.model.component.Component
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

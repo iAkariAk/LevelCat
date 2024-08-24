@@ -1,8 +1,8 @@
 package com.akari.levelcat.data.model
 
 import androidx.compose.runtime.Stable
-import com.akari.levelcat.integratedlevel.model.Level
-import com.akari.levelcat.integratedlevel.model.LevelProperty
+import com.akari.levelcat.level.model.Level
+import com.akari.levelcat.level.model.component.LevelProperty
 
 @Stable
 data class Project(

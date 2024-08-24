@@ -1,1 +1,0 @@
--keep class com.akari.levelcat.integratedlevel.model.** {*;}

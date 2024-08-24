@@ -11,7 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
-val LocalLevelNavController = compositionLocalOf<NavHostController> { error("Impossible") }
+val LocalNavController = compositionLocalOf<NavHostController> { error("Impossible") }
 val LocalBackStck = compositionLocalOf<NavBackStackEntry> { error("Impossible") }
 
 @Composable
@@ -28,7 +28,7 @@ fun LevelcatNavHost(modifier: Modifier = Modifier) {
                 arguments = destination.arguments
             ) { backStackEntry ->
                 CompositionLocalProvider(
-                    LocalLevelNavController provides navController,
+                    LocalNavController provides navController,
                     LocalBackStck provides backStackEntry
                 ) {
                     destination.screen(Modifier.fillMaxSize())

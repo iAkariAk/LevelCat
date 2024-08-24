@@ -1,6 +1,8 @@
 package com.akari.levelcat.integratedlevel.model
 
-import com.akari.levelcat.integratedlevel.Json
+import com.akari.levelcat.level.model.Level
+import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.util.Json
 import kotlinx.serialization.encodeToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
