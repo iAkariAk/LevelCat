@@ -19,6 +19,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -40,8 +44,8 @@ fun EditorScreen(
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val editorUiState = viewModel.editorUiState
-    val level = editorUiState.project.level
+    val editorUiState by viewModel.editorUiState.collectAsState()
+    val saveOpterations = remember { PresaveOpterationsImpl() }
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -61,7 +65,10 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::save) {
+                    IconButton(onClick = {
+                        saveOpterations.save()
+                        viewModel.save()
+                    }) {
                         Icon(Icons.Outlined.Save, contentDescription = "save")
                     }
                 }
@@ -77,19 +84,36 @@ fun EditorScreen(
     ) { innerPadding ->
 
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            items(level.components) { component ->
-                Editor(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    component = component,
-                    onComponentChange = {
-                        logger.info("onComponentChange: $it")
-                        viewModel.updateComponent(it)
-                    },
-                    onComponentDelete = { viewModel.removeComponent(component) }
-                )
+            items(editorUiState.components) { component ->
+                CompositionLocalProvider(LocalPresaveOpterations provides saveOpterations) {
+                    Editor(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        component = component,
+                        onComponentChange = {
+                            logger.info("onComponentChange: $it")
+                            viewModel.updateComponent(it)
+                        },
+                        onComponentDelete = { viewModel.removeComponent(component) }
+                    )
+                }
             }
         }
     }
+}
+
+val LocalPresaveOpterations = compositionLocalOf<PresaveOpterations> { error("Impossible") }
+
+interface PresaveOpterations {
+    fun register(listener: () -> Unit)
+}
+
+private class PresaveOpterationsImpl : PresaveOpterations {
+    private val listeners = mutableListOf<() -> Unit>()
+    override fun register(listener: () -> Unit) {
+        listeners.add(listener)
+    }
+
+    fun save() = listeners.forEach { it() }
 }

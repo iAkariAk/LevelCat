@@ -9,6 +9,11 @@ import kotlinx.serialization.Serializable
 @Stable
 sealed interface Component
 
+@Stable
+interface MutableComponent<T : Component> {
+    fun asImmutable(): T
+}
+
 @Composable
 fun Editor(
     component: Component,
@@ -16,11 +21,11 @@ fun Editor(
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) = when (component) {
-        is LevelProperty -> LevelPropertyEditor(
-            modifier = modifier,
-            component = component,
-            onComponentChange = onComponentChange,
-            onComponentDelete = onComponentDelete,
-        )
-    }
+    is LevelProperty -> LevelPropertyEditor(
+        modifier = modifier,
+        component = component,
+        onComponentChange = onComponentChange,
+        onComponentDelete = onComponentDelete,
+    )
+}
 

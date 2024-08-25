@@ -6,6 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -55,7 +57,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val navController = LocalNavController.current
-    val homeUiState by viewModel.uiState.collectAsState()
+    val homeUiState by viewModel.homeUiState.collectAsState()
 
     Scaffold(
         modifier = modifier,
@@ -82,6 +84,7 @@ fun HomeScreen(
                     item = item,
                     onDeleteProject = { viewModel.deleteProject(item) },
                     onRenameProject = { viewModel.renameProject(item, it) },
+                    onExportProject = { viewModel.exportProject(item) },
                     onOpenProject = {
                         navController.navigate(
                             NavigationDestination.Editor.withArguments(item.id)
@@ -173,6 +176,7 @@ private fun ProjectItem(
     modifier: Modifier = Modifier,
     onOpenProject: () -> Unit = {},
     onDeleteProject: () -> Unit = {},
+    onExportProject: () -> Unit = {},
     onRenameProject: (newName: String) -> Unit = {},
 ) {
     var newName by remember { mutableStateOf(item.name) }
@@ -194,7 +198,6 @@ private fun ProjectItem(
                     text = item.name,
                     style = MaterialTheme.typography.titleLarge
                 )
-
                 Text(
                     text = buildAnnotatedString {
                         withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
@@ -205,11 +208,13 @@ private fun ProjectItem(
                     style = MaterialTheme.typography.titleMedium,
                 )
             }
-            IconButton(
-                modifier = Modifier.align(Alignment.TopEnd),
-                onClick = onDeleteProject
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = null)
+            Row(modifier = Modifier.align(Alignment.TopEnd)) {
+                IconButton(onClick = onExportProject) {
+                    Icon(Icons.Outlined.ContentCopy, contentDescription = null)
+                }
+                IconButton(onClick = onDeleteProject) {
+                    Icon(Icons.Outlined.Delete, contentDescription = null)
+                }
             }
             Text(
                 modifier = Modifier.align(Alignment.BottomEnd),

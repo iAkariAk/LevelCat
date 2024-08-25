@@ -5,8 +5,8 @@ import com.akari.levelcat.level.model.component.Component
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Serializable
 @Stable
+@Serializable
 data class Level(
     @SerialName("Version")
     val version: Int = VERSION,
