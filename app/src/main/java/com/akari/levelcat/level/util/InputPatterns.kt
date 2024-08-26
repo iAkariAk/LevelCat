@@ -9,6 +9,8 @@ interface InputPattern {
     fun match(input: String): Boolean
 }
 
+fun InputPattern?.match(input: String) = this?.match(input) ?: true
+
 inline fun patternOf(
     errorMessage: String = "Invalid input",
     crossinline match: (String) -> Boolean,

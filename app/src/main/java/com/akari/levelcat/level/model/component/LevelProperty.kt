@@ -1,18 +1,14 @@
 package com.akari.levelcat.level.model.component
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import com.akari.levelcat.level.ui.component.ComponentCard
 import com.akari.levelcat.level.ui.component.ComponentTextField
 import com.akari.levelcat.level.util.BooleanOrEmpty
 import com.akari.levelcat.level.util.IntOrEmpty
+import com.akari.levelcat.level.util.copyUnsafely
 import com.akari.levelcat.level.util.patternOf
+import com.akari.levelcat.util.logger
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -41,67 +37,84 @@ data class LevelProperty(
     val startingWave: Int? = null,
     @SerialName("WavesPerFlag")
     val wavesPerFlag: Int? = null,
-) : Component
+) : Component {
+    override fun asState() = LevelPropertyState(
+        allowedZombies = allowedZombies ?: emptyList(),
+        background = background?.toString() ?: "",
+        easyUpgrade = easyUpgrade?.toString() ?: "",
+        initPlantColumn = initPlantColumn?.toString() ?: "",
+        name = name ?: "",
+        creator = creator ?: "",
+        numWaves = numWaves?.toString() ?: "",
+        startingSun = startingSun?.toString() ?: "",
+        startingTime = startingTime?.toString() ?: "",
+        startingWave = startingWave?.toString() ?: "",
+        wavesPerFlag = wavesPerFlag?.toString() ?: "",
 
+        )
+}
+
+
+data class LevelPropertyState(
+    val allowedZombies: List<Int>,
+    val background: String,
+    val creator: String,
+    val easyUpgrade: String,
+    val initPlantColumn: String,
+    val name: String,
+    val numWaves: String,
+    val startingSun: String,
+    val startingTime: String,
+    val startingWave: String,
+    val wavesPerFlag: String,
+) : ComponentState<LevelProperty> {
+    override fun toComponent() = LevelProperty(
+        allowedZombies = allowedZombies,
+        background = background.toIntOrNull(),
+        name = name.takeIf(String::isNotEmpty),
+        creator = creator.takeIf(String::isNotEmpty),
+        easyUpgrade = easyUpgrade.toBooleanStrictOrNull(),
+        initPlantColumn = initPlantColumn.toIntOrNull(),
+        numWaves = numWaves.toIntOrNull(),
+        startingSun = startingSun.toIntOrNull(),
+        startingTime = startingTime.toIntOrNull(),
+        startingWave = startingWave.toIntOrNull(),
+        wavesPerFlag = wavesPerFlag.toIntOrNull(),
+    )
+}
 
 @Composable
 fun LevelPropertyEditor(
     modifier: Modifier,
-    component: LevelProperty,
-    onComponentChange: (LevelProperty) -> Unit,
+    componentState: LevelPropertyState,
+    onComponentStateChange: (LevelPropertyState) -> Unit,
     onComponentDelete: () -> Unit,
 ) {
-    val mutableModel = remember(component) {
-        object {
-            val allowedZombies =
-                component.allowedZombies?.toMutableStateList() ?: mutableStateListOf()
-            var background by mutableStateOf<String>(component.background?.toString() ?: "")
-            var name by mutableStateOf<String>(component.name?.toString() ?: "")
-            var creator by mutableStateOf<String>(component.creator?.toString() ?: "")
-            var easyUpgrade by mutableStateOf<String>(component.easyUpgrade?.toString() ?: "")
-            var initPlantColumn by mutableStateOf<String>(
-                component.initPlantColumn?.toString() ?: ""
-            )
-            var numWaves by mutableStateOf<String>(component.numWaves?.toString() ?: "")
-            var startingSun by mutableStateOf<String>(component.startingSun?.toString() ?: "")
-            var startingTime by mutableStateOf<String>(component.startingTime?.toString() ?: "")
-            var startingWave by mutableStateOf<String>(component.startingWave?.toString() ?: "")
-            var wavesPerFlag by mutableStateOf<String>(component.wavesPerFlag?.toString() ?: "")
-
-            fun asImmutable() = LevelProperty(
-                allowedZombies = allowedZombies,
-                background = background.toIntOrNull(),
-                name = name.takeIf(String::isNotEmpty),
-                creator = creator.takeIf(String::isNotEmpty),
-                easyUpgrade = easyUpgrade.toBooleanStrictOrNull(),
-                initPlantColumn = initPlantColumn.toIntOrNull(),
-                numWaves = numWaves.toIntOrNull(),
-                startingSun = startingSun.toIntOrNull(),
-                startingTime = startingTime.toIntOrNull(),
-                startingWave = startingWave.toIntOrNull(),
-                wavesPerFlag = wavesPerFlag.toIntOrNull(),
-            )
-        }
-    }
     ComponentCard(
         modifier = modifier,
         componentName = "LevelProperty",
-        onComponentChange = { onComponentChange(mutableModel.asImmutable()) },
         onComponentDelete = onComponentDelete
     ) {
         listOf(
-            Triple("Background", mutableModel::background, IntOrEmpty),
-            Triple("Name", mutableModel::name, null),
-            Triple("Creator", mutableModel::creator, patternOf("你不是真正的高视角！") { it != "高视角" }),
-            Triple("EasyUpgrade", mutableModel::easyUpgrade, BooleanOrEmpty),
-            Triple("InitPlantColumn", mutableModel::initPlantColumn, IntOrEmpty),
-            Triple("NumWaves", mutableModel::numWaves, IntOrEmpty),
+            Triple("Background", componentState::background, IntOrEmpty),
+            Triple("Name", componentState::name, null),
+            Triple(
+                "Creator",
+                componentState::creator,
+                patternOf("你不是真正的高视角！") { it != "高视角" }),
+            Triple("EasyUpgrade", componentState::easyUpgrade, BooleanOrEmpty),
+            Triple("InitPlantColumn", componentState::initPlantColumn, IntOrEmpty),
+            Triple("NumWaves", componentState::numWaves, IntOrEmpty),
         ).forEach { (name, property, pattern) ->
             ComponentTextField(
                 propertyName = name,
                 pattern = pattern,
                 value = property.get(),
-                onValueChange = property::set,
+                onValueChange = {
+                    val newComponentState = componentState.copyUnsafely(mapOf(property.name to it))
+                    logger.debug("newComponentState: $newComponentState")
+                    onComponentStateChange(newComponentState)
+                },
             )
         }
     }

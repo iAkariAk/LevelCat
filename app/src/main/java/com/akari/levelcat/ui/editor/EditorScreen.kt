@@ -9,27 +9,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.akari.levelcat.level.model.component.Editor
-import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.model.component.LevelPropertyState
 import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
@@ -45,7 +31,6 @@ fun EditorScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val editorUiState by viewModel.editorUiState.collectAsState()
-    val saveOpterations = remember { PresaveOpterationsImpl() }
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -66,7 +51,6 @@ fun EditorScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        saveOpterations.save()
                         viewModel.save()
                     }) {
                         Icon(Icons.Outlined.Save, contentDescription = "save")
@@ -76,7 +60,21 @@ fun EditorScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                viewModel.addComponent(LevelProperty())
+                viewModel.addComponent(
+                    LevelPropertyState(
+                        allowedZombies = listOf(),
+                        background = "sem",
+                        creator = "te",
+                        easyUpgrade = "euismod",
+                        initPlantColumn = "platea",
+                        name = "Neva Wilkerson",
+                        numWaves = "class",
+                        startingSun = "necessitatibus",
+                        startingTime = "consequat",
+                        startingWave = "tamquam",
+                        wavesPerFlag = "dico"
+                    )
+                )
             }) {
                 Icon(Icons.Default.Add, contentDescription = null)
             }
@@ -84,36 +82,19 @@ fun EditorScreen(
     ) { innerPadding ->
 
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            items(editorUiState.components) { component ->
-                CompositionLocalProvider(LocalPresaveOpterations provides saveOpterations) {
-                    Editor(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        component = component,
-                        onComponentChange = {
-                            logger.info("onComponentChange: $it")
-                            viewModel.updateComponent(it)
-                        },
-                        onComponentDelete = { viewModel.removeComponent(component) }
-                    )
-                }
+            items(editorUiState.components) { componentState ->
+                Editor(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    componentState = componentState,
+                    onComponentStateChange = {
+                        logger.info("onComponentChange: $it")
+                        viewModel.updateComponent(it)
+                    },
+                    onComponentDelete = { viewModel.removeComponent(componentState) }
+                )
             }
         }
     }
-}
-
-val LocalPresaveOpterations = compositionLocalOf<PresaveOpterations> { error("Impossible") }
-
-interface PresaveOpterations {
-    fun register(listener: () -> Unit)
-}
-
-private class PresaveOpterationsImpl : PresaveOpterations {
-    private val listeners = mutableListOf<() -> Unit>()
-    override fun register(listener: () -> Unit) {
-        listeners.add(listener)
-    }
-
-    fun save() = listeners.forEach { it() }
 }

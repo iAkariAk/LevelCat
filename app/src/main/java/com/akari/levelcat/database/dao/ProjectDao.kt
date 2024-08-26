@@ -1,10 +1,6 @@
 package com.akari.levelcat.database.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.akari.levelcat.database.model.ProjectEntity
 import kotlinx.coroutines.flow.Flow
 

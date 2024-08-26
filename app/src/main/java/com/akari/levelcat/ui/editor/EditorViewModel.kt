@@ -3,9 +3,7 @@
 package com.akari.levelcat.ui.editor
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -13,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.data.repository.ProjectRepository
 import com.akari.levelcat.level.model.Level
-import com.akari.levelcat.level.model.component.Component
+import com.akari.levelcat.level.model.component.ComponentState
 import com.akari.levelcat.ui.navigation.ARG_EDITOR_ID
 import com.akari.levelcat.util.logger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,18 +40,24 @@ class EditorViewModel @Inject constructor(
             Project.Empty
         )
 
-    //    private val mutableComponents = mutableStateMapOf<KClass<out Component>, Component>()
-    private var components by mutableStateOf(mapOf<KClass<out Component>, Component>())
+    private val mutableComponents =
+        mutableStateMapOf<KClass<out ComponentState<*>>, ComponentState<*>>()
+
+    //    private var components by mutableStateOf(mapOf<KClass<out Component>, Component>())
     val editorUiState = combine(
         project.map { it.id },
         project.map { it.name },
         project.map { it.creator },
         project.map { it.level.version },
-        snapshotFlow {
-            components
-        }
+        snapshotFlow { mutableComponents.toMap() }
     ) { id, name, creator, version, components ->
-        EditorUiState(id, name, creator, version, components.values.toList())
+        EditorUiState(
+            id,
+            name,
+            creator,
+            version,
+            components.values.toList()
+        )
     }.stateIn(
         scope = viewModelScope,
         started = WhileSubscribed(5000),
@@ -63,10 +67,14 @@ class EditorViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             project.collectLatest {
-                val initialMap = project.value.level.components.associateBy { it::class }
-//                mutableComponents.clear()
-//                mutableComponents.putAll(initialMap)
-                components = initialMap
+                val initialMap = project.value.level.components
+                    .associate {
+                        val state = it.asState()
+                        state::class to state
+                    }
+                mutableComponents.clear()
+                mutableComponents.putAll(initialMap)
+//                components = initialMap
             }
 
             launch {
@@ -78,19 +86,19 @@ class EditorViewModel @Inject constructor(
     }
 
 
-    fun addComponent(component: Component) = viewModelScope.launch {
-//        mutableComponents.putIfAbsent(component::class, component)
-        components = components + (component::class to component)
+    fun addComponent(component: ComponentState<*>) = viewModelScope.launch {
+        mutableComponents.putIfAbsent(component::class, component)
+//        mutableComponents = mutableComponents + (component::class to component)
     }
 
-    fun updateComponent(component: Component) {
-//        mutableComponents[component::class] = component
-        components = components + (component::class to component)
+    fun updateComponent(component: ComponentState<*>) {
+        mutableComponents[component::class] = component
+//        mutableComponents = mutableComponents + (component::class to component)
     }
 
-    fun removeComponent(component: Component) {
-//        mutableComponents.remove(component::class)
-        components = components - (component::class)
+    fun removeComponent(component: ComponentState<*>) {
+        mutableComponents.remove(component::class)
+//        mutableComponents = mutableComponents - (component::class)
     }
 
     fun save() = viewModelScope.launch {
@@ -107,7 +115,7 @@ data class EditorUiState(
     val projectName: String,
     val projectCreate: String,
     val projectSdkVersion: Int,
-    val components: List<Component>,
+    val components: List<ComponentState<*>>,
 ) {
     companion object {
         val Empty = EditorUiState(
@@ -127,7 +135,7 @@ fun EditorUiState.toProject() = Project(
     lastModifyTime = System.currentTimeMillis(),
     level = Level(
         version = projectSdkVersion,
-        components = components
+        components = components.map(ComponentState<*>::toComponent)
     )
 )
 

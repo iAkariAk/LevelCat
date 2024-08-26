@@ -3,29 +3,35 @@ package com.akari.levelcat.level.model.component
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import com.akari.levelcat.util.logger
 import kotlinx.serialization.Serializable
 
 @Serializable
 @Stable
-sealed interface Component
+sealed interface Component {
+    fun asState(): ComponentState<Component>
+}
 
 @Stable
-interface MutableComponent<T : Component> {
-    fun asImmutable(): T
+sealed interface ComponentState<out T : Component> {
+    fun toComponent(): T
 }
+
 
 @Composable
 fun Editor(
-    component: Component,
-    onComponentChange: (Component) -> Unit,
+    componentState: ComponentState<*>,
+    onComponentStateChange: (ComponentState<*>) -> Unit,
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier,
-) = when (component) {
-    is LevelProperty -> LevelPropertyEditor(
+) = when (componentState) {
+    is LevelPropertyState -> LevelPropertyEditor(
         modifier = modifier,
-        component = component,
-        onComponentChange = onComponentChange,
+        componentState = componentState,
+        onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
-    )
+    ).apply {
+        logger.debug("LPS")
+    }
 }
 

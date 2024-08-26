@@ -3,24 +3,14 @@ package com.akari.levelcat.level.ui.component
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import com.akari.levelcat.level.util.InputPattern
+import com.akari.levelcat.level.util.match
 import com.akari.levelcat.util.logger
 
 @Composable
@@ -48,7 +38,7 @@ fun PatternedTextField(
     shape: Shape = TextFieldDefaults.shape,
     colors: TextFieldColors = TextFieldDefaults.colors(),
 ) {
-    var isError by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(!pattern.match(value)) }
     TextField(
         value = value,
         onValueChange = {
@@ -118,7 +108,10 @@ fun OutlinedPatternedTextField(
     shape: Shape = OutlinedTextFieldDefaults.shape,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
 ) {
-    var isError by remember { mutableStateOf(false) }
+    var isError by remember {
+        pattern.match(value)
+        mutableStateOf(!pattern.match(value))
+    }
     OutlinedTextField(
         value = value,
         onValueChange = {
