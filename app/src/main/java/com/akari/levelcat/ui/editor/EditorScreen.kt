@@ -62,17 +62,17 @@ fun EditorScreen(
             FloatingActionButton(onClick = {
                 viewModel.addComponent(
                     LevelPropertyState(
-                        allowedZombies = listOf(),
-                        background = "sem",
-                        creator = "te",
-                        easyUpgrade = "euismod",
-                        initPlantColumn = "platea",
-                        name = "Neva Wilkerson",
-                        numWaves = "class",
-                        startingSun = "necessitatibus",
-                        startingTime = "consequat",
-                        startingWave = "tamquam",
-                        wavesPerFlag = "dico"
+                        allowedZombies = emptyList(),
+                        background = "",
+                        creator = "高视角",
+                        easyUpgrade = "",
+                        initPlantColumn = "",
+                        name = "",
+                        numWaves = "",
+                        startingSun = "",
+                        startingTime = "",
+                        startingWave = "",
+                        wavesPerFlag = ""
                     )
                 )
             }) {

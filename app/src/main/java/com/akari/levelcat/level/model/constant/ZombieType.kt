@@ -1,5 +1,10 @@
 package com.akari.levelcat.level.model.constant
 
+import kotlinx.serialization.Serializable
+
+object ZombieTypeSerializer : ConstantEnumSerializer<ZombieType>(ZombieType.entries)
+
+@Serializable(with = ZombieTypeSerializer::class)
 enum class ZombieType(override val id: Int) : ConstantEnum {
     Normal(id = 0),
     Flag(id = 1),

@@ -1,6 +1,5 @@
-package com.akari.levelcat.integratedlevel.model
+package com.akari.levelcat.level.model
 
-import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.util.Json
 import kotlinx.serialization.encodeToString

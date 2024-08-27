@@ -3,7 +3,6 @@ package com.akari.levelcat.level.model.component
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
-import com.akari.levelcat.util.logger
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,8 +29,6 @@ fun Editor(
         componentState = componentState,
         onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
-    ).apply {
-        logger.debug("LPS")
-    }
+    )
 }
 

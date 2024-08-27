@@ -6,7 +6,7 @@ fun <T : Any> T.copyUnsafely(values: Map<String, *>): T {
     val jclass = this::class.java
     val newObj = Unsafe.allocateInstance(jclass)
     jclass.declaredFields.asSequence()
-        .filter { Modifier.isPrivate(it.modifiers) }
+        .filter { Modifier.isPrivate(it.modifiers) } // Data class fields are private
         .onEach { it.isAccessible = true }
         .forEach { field ->
             val newValue = values.getOrElse(field.name) { field.get(this) }

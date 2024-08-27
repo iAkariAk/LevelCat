@@ -1,14 +1,16 @@
 package com.akari.levelcat.level.model.component
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.ui.component.ComponentCard
+import com.akari.levelcat.level.ui.component.ComponentEnumField
 import com.akari.levelcat.level.ui.component.ComponentTextField
 import com.akari.levelcat.level.util.BooleanOrEmpty
 import com.akari.levelcat.level.util.IntOrEmpty
 import com.akari.levelcat.level.util.copyUnsafely
 import com.akari.levelcat.level.util.patternOf
-import com.akari.levelcat.util.logger
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -49,9 +51,8 @@ data class LevelProperty(
         startingSun = startingSun?.toString() ?: "",
         startingTime = startingTime?.toString() ?: "",
         startingWave = startingWave?.toString() ?: "",
-        wavesPerFlag = wavesPerFlag?.toString() ?: "",
-
-        )
+        wavesPerFlag = wavesPerFlag?.toString() ?: ""
+    )
 }
 
 
@@ -112,10 +113,16 @@ fun LevelPropertyEditor(
                 value = property.get(),
                 onValueChange = {
                     val newComponentState = componentState.copyUnsafely(mapOf(property.name to it))
-                    logger.debug("newComponentState: $newComponentState")
                     onComponentStateChange(newComponentState)
                 },
             )
         }
+        var zombieType by remember { mutableStateOf(ZombieType.Boss) }
+        ComponentEnumField<ZombieType>(
+            modifier = Modifier.fillMaxWidth(),
+            propertyName = "ZombieType",
+            entry = zombieType,
+            onEntryChange = {zombieType = it}
+        )
     }
 }

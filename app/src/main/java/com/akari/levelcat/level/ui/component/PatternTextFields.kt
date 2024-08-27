@@ -5,6 +5,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -38,7 +39,7 @@ fun PatternedTextField(
     shape: Shape = TextFieldDefaults.shape,
     colors: TextFieldColors = TextFieldDefaults.colors(),
 ) {
-    var isError by remember { mutableStateOf(!pattern.match(value)) }
+    var isError by rememberSaveable { mutableStateOf(!pattern.match(value)) }
     TextField(
         value = value,
         onValueChange = {
@@ -108,15 +109,12 @@ fun OutlinedPatternedTextField(
     shape: Shape = OutlinedTextFieldDefaults.shape,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
 ) {
-    var isError by remember {
-        pattern.match(value)
-        mutableStateOf(!pattern.match(value))
-    }
+    var isError by rememberSaveable { mutableStateOf(!pattern.match(value)) }
     OutlinedTextField(
         value = value,
         onValueChange = {
             onValueChange(it)
-            if (pattern?.match(it) ?: true) {
+            if (pattern.match(it)) {
                 isError = false
                 logger.info("value validated $it")
                 onValueValidated(it)

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.akari.levelcat.level.ui.component
 
 import androidx.compose.foundation.BorderStroke
@@ -8,14 +10,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.akari.levelcat.level.model.constant.ConstantEnum
 import com.akari.levelcat.level.util.InputPattern
+import kotlin.enums.enumEntries
 
 
 @Composable
@@ -50,18 +53,11 @@ fun ComponentCard(
                 }
 
             }
-//            HorizontalDivider()
-//            with(ComponentCardScopeImpl(this, onComponentChange)) {
+            HorizontalDivider()
             editAreaContent()
-//            }
         }
     }
 }
-
-//interface ComponentCardScope : ColumnScope
-//
-//private class ComponentCardScopeImpl(columnScope: ColumnScope, val onComponentChange: () -> Unit) :
-//    ComponentCardScope, ColumnScope by columnScope
 
 @Composable
 fun ComponentTextField(
@@ -90,8 +86,6 @@ fun ComponentTextField(
     shape: Shape = OutlinedTextFieldDefaults.shape,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
 ) {
-//    this as ComponentCardScopeImpl
-
     OutlinedPatternedTextField(
         modifier = modifier
             .fillMaxWidth()
@@ -120,4 +114,46 @@ fun ComponentTextField(
         shape = shape,
         colors = colors
     )
+}
+
+@Composable
+inline fun <reified E> ComponentEnumField(
+    propertyName: String,
+    entry: E,
+    crossinline onEntryChange: (E) -> Unit,
+    modifier: Modifier = Modifier,
+) where E : Enum<E>, E : ConstantEnum {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        modifier = modifier,
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(),
+            value = entry.displayName,
+            onValueChange = {},
+            label = { Text(propertyName) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            readOnly = false,
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            enumEntries<E>().forEach { entry ->
+                DropdownMenuItem(
+                    text = { Text(entry.displayName) },
+                    onClick = {
+                        onEntryChange(entry)
+                        expanded = false
+                    },
+//                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
+            }
+        }
+    }
 }
