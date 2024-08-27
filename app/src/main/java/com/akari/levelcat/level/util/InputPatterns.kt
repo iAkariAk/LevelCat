@@ -1,7 +1,11 @@
+@file:Suppress("unused")
+
 package com.akari.levelcat.level.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.akari.levelcat.level.util.InputPatterns.FloatRange
+import com.akari.levelcat.level.util.InputPatterns.IntRange
 
 
 interface InputPattern {
@@ -17,6 +21,14 @@ inline fun patternOf(
 ) = object : InputPattern {
     override val errorMessage = errorMessage
     override fun match(input: String) = match(input)
+}
+
+inline fun regexPatternOf(
+    errorMessage: String,
+    crossinline regexString: () -> String
+) = patternOf(errorMessage) { input ->
+    val regex = Regex(regexString())
+    regex.matches(input)
 }
 
 fun InputPattern.withErrorMessage(errorMessage: String) =
@@ -37,30 +49,34 @@ infix fun InputPattern.xor(other: InputPattern) =
         this.match(it) xor other.match(it)
     }
 
+@Suppress("MemberVisibilityCanBePrivate")
+object InputPatterns {
+    val EmptyOnly = patternOf("Value must be empty") { it.isEmpty() }
+    val IntOnly = patternOf("Value must be an integer") { it.toIntOrNull() != null }
+    val BooleanOnly =
+        patternOf("Value must be a boolean which in either 'true' or 'false") { it.toBooleanStrictOrNull() != null }
+    val FloatOnly = patternOf { it.toFloatOrNull() != null }
+    val IntOrEmpty = (EmptyOnly or IntOnly).withErrorMessage("Value must be an integer or empty")
+    val FloatOrEmpty = (EmptyOnly or FloatOnly).withErrorMessage("Value must be a float or empty")
+    val BooleanOrEmpty =
+        (BooleanOnly or EmptyOnly).withErrorMessage("Value must be a boolean or empty which in either 'true' or 'false' or empty")
+    val NotEmpty = patternOf("Value must not be empty") { it.isNotEmpty() }
+    val NotBlank = patternOf("Value must not be blank") { it.isNotBlank() }
 
-val EmptyOnly = patternOf("Value must be empty") { it.isEmpty() }
-val IntOnly = patternOf("Value must be an integer") { it.toIntOrNull() != null }
-val BooleanOnly =
-    patternOf("Value must be a boolean which in either 'true' or 'false") { it.toBooleanStrictOrNull() != null }
-val FloatOnly = patternOf { it.toFloatOrNull() != null }
-val IntOrEmpty = (EmptyOnly or IntOnly).withErrorMessage("Value must be an integer or empty")
-val FloatOrEmpty = (EmptyOnly or FloatOnly).withErrorMessage("Value must be a float or empty")
-val BooleanOrEmpty =
-    (BooleanOnly or EmptyOnly).withErrorMessage("Value must be a boolean or empty which in either 'true' or 'false' or empty")
+    class IntRange(val range: kotlin.ranges.IntRange) : InputPattern {
+        override val errorMessage = "Value must be between ${range.first} and ${range.last}"
+        override fun match(input: String) = input.toIntOrNull() in range
+    }
 
-class IntRangePattern(val range: kotlin.ranges.IntRange) : InputPattern {
-    override val errorMessage = "Value must be between ${range.first} and ${range.last}"
-    override fun match(input: String) = input.toIntOrNull() in range
-}
-
-class FloatRangePattern(val range: ClosedFloatingPointRange<Float>) : InputPattern {
-    override val errorMessage = "Value must be between ${range.start} and ${range.endInclusive}"
-    override fun match(input: String) = input.toFloatOrNull()?.let { it in range } ?: false
+    class FloatRange(val range: ClosedFloatingPointRange<Float>) : InputPattern {
+        override val errorMessage = "Value must be between ${range.start} and ${range.endInclusive}"
+        override fun match(input: String) = input.toFloatOrNull()?.let { it in range } ?: false
+    }
 }
 
 @Composable
-fun remeberIntRangePattern(range: IntRange) = remember { IntRangePattern(range) }
+fun rememberIntRangePattern(range: kotlin.ranges.IntRange) = remember { IntRange(range) }
 
 @Composable
-fun remeberFloatRangePattern(range: ClosedFloatingPointRange<Float>) =
-    remember { FloatRangePattern(range) }
+fun rememberFloatRangePattern(range: ClosedFloatingPointRange<Float>) =
+    remember { FloatRange(range) }

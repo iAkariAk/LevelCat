@@ -7,8 +7,8 @@ import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.ui.component.ComponentCard
 import com.akari.levelcat.level.ui.component.ComponentEnumField
 import com.akari.levelcat.level.ui.component.ComponentTextField
-import com.akari.levelcat.level.util.BooleanOrEmpty
-import com.akari.levelcat.level.util.IntOrEmpty
+import com.akari.levelcat.level.util.InputPatterns.BooleanOrEmpty
+import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
 import com.akari.levelcat.level.util.copyUnsafely
 import com.akari.levelcat.level.util.patternOf
 import kotlinx.serialization.SerialName
