@@ -5,9 +5,12 @@ package com.akari.levelcat.level.ui.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -153,6 +156,51 @@ inline fun <reified E> ComponentEnumField(
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun <T> ComponentListField(
+    propertyName: String,
+    items: List<T>,
+    onItemChange: (List<T>) -> Unit,
+    initialItem: () -> T,
+    itemContent: @Composable (item: T, onItemDelete: () -> Unit) -> Unit,
+    modifier: Modifier = Modifier,
+    shape: Shape = CardDefaults.outlinedShape,
+    colors: CardColors = CardDefaults.outlinedCardColors(),
+    elevation: CardElevation = CardDefaults.outlinedCardElevation(),
+    border: BorderStroke = CardDefaults.outlinedCardBorder(),
+) {
+    OutlinedCard(
+        modifier = modifier,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        border = border
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    propertyName,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                IconButton(onClick = { onItemChange(items + initialItem()) }) {
+                    Icon(Icons.Outlined.Add, contentDescription = "add")
+                }
+            }
+            HorizontalDivider()
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            )  {
+                items(items) { item ->
+                    itemContent(item, { items - item })
+                }
             }
         }
     }

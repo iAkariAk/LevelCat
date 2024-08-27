@@ -1,11 +1,14 @@
 package com.akari.levelcat.level.model.component
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.ui.component.ComponentCard
-import com.akari.levelcat.level.ui.component.ComponentEnumField
+import com.akari.levelcat.level.ui.component.ComponentListField
 import com.akari.levelcat.level.ui.component.ComponentTextField
 import com.akari.levelcat.level.util.InputPatterns.BooleanOrEmpty
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
@@ -18,7 +21,7 @@ import kotlinx.serialization.Serializable
 @SerialName("LevelProperty")
 data class LevelProperty(
     @SerialName("AllowedZombies")
-    val allowedZombies: List<Int>? = null,
+    val allowedZombies: List<ZombieType>? = null,
     @SerialName("Background")
     val background: Int? = null,
     @SerialName("Creator")
@@ -57,7 +60,7 @@ data class LevelProperty(
 
 
 data class LevelPropertyState(
-    val allowedZombies: List<Int>,
+    val allowedZombies: List<ZombieType>,
     val background: String,
     val creator: String,
     val easyUpgrade: String,
@@ -117,12 +120,20 @@ fun LevelPropertyEditor(
                 },
             )
         }
-        var zombieType by remember { mutableStateOf(ZombieType.Boss) }
-        ComponentEnumField<ZombieType>(
-            modifier = Modifier.fillMaxWidth(),
-            propertyName = "ZombieType",
-            entry = zombieType,
-            onEntryChange = {zombieType = it}
+        ComponentListField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 500.dp),
+            propertyName = "AllowedZombies",
+            items = componentState.allowedZombies,
+            onItemChange = {
+                val newComponentState = componentState.copy(allowedZombies = it)
+                onComponentStateChange(newComponentState)
+            },
+            initialItem = { ZombieType.Boss },
+            itemContent = { item, onItemDelete ->
+                Text(item.displayName)
+            },
         )
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.akari.levelcat.level.model.component.Editor
@@ -30,6 +31,7 @@ fun EditorScreen(
     val navController = LocalNavController.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
     val editorUiState by viewModel.editorUiState.collectAsState()
     Scaffold(
         modifier = modifier,
@@ -59,23 +61,24 @@ fun EditorScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.addComponent(
-                    LevelPropertyState(
-                        allowedZombies = emptyList(),
-                        background = "",
-                        creator = "高视角",
-                        easyUpgrade = "",
-                        initPlantColumn = "",
-                        name = "",
-                        numWaves = "",
-                        startingSun = "",
-                        startingTime = "",
-                        startingWave = "",
-                        wavesPerFlag = ""
+            FloatingActionButton(
+                onClick = {
+                    viewModel.addComponent(
+                        LevelPropertyState(
+                            allowedZombies = emptyList(),
+                            background = "",
+                            creator = "高视角",
+                            easyUpgrade = "",
+                            initPlantColumn = "",
+                            name = "",
+                            numWaves = "",
+                            startingSun = "",
+                            startingTime = "",
+                            startingWave = "",
+                            wavesPerFlag = ""
+                        )
                     )
-                )
-            }) {
+                }) {
                 Icon(Icons.Default.Add, contentDescription = null)
             }
         }
