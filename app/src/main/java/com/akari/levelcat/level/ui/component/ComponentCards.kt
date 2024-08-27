@@ -138,7 +138,7 @@ inline fun <reified E> ComponentEnumField(
             label = { Text(propertyName) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-            readOnly = false,
+            readOnly = true,
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -151,7 +151,7 @@ inline fun <reified E> ComponentEnumField(
                         onEntryChange(entry)
                         expanded = false
                     },
-//                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
