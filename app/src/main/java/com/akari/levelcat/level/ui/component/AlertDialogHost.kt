@@ -70,11 +70,11 @@ private class AlertDialogStateImpl<T>(
 object AlertDialogHostStateDefaults {
     val confirmButton: @Composable AlertArgumentsScope.(AlertDialogController) -> Unit
         get() = { controller ->
-            AlertDialogHostStateWithoutResultDefaults.confirmButton(controller)
+            AlertDialogHostWithoutResultStateDefaults.confirmButton(controller)
         }
     val dismissButton: @Composable AlertArgumentsScope.(AlertDialogController) -> Unit
         get() = { controller ->
-            AlertDialogHostStateWithoutResultDefaults.dismissButton(controller)
+            AlertDialogHostWithoutResultStateDefaults.dismissButton(controller)
         }
 }
 

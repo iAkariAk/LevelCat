@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
 
-object AlertDialogHostStateWithoutResultDefaults {
+object AlertDialogHostWithoutResultStateDefaults {
     val confirmButton: @Composable (AlertDialogController) -> Unit
         get() = { controller ->
             TextButton(onClick = controller::confirm) { Text("Confirm") }
@@ -23,15 +23,15 @@ object AlertDialogHostStateWithoutResultDefaults {
 }
 
 @Stable
-class AlertDialogHostStateWithoutResult {
+class AlertDialogWithoutResultHostState {
     val delegate = AlertDialogHostState<Unit>()
 
     suspend fun alert(
         title: @Composable (controller: AlertDialogController) -> Unit = {},
         icon: @Composable (controller: AlertDialogController) -> Unit = {},
         text: @Composable (controller: AlertDialogController) -> Unit = {},
-        confirmButton: @Composable (controller: AlertDialogController) -> Unit = AlertDialogHostStateWithoutResultDefaults.confirmButton,
-        dismissButton: @Composable (controller: AlertDialogController) -> Unit = AlertDialogHostStateWithoutResultDefaults.dismissButton,
+        confirmButton: @Composable (controller: AlertDialogController) -> Unit = AlertDialogHostWithoutResultStateDefaults.confirmButton,
+        dismissButton: @Composable (controller: AlertDialogController) -> Unit = AlertDialogHostWithoutResultStateDefaults.dismissButton,
     ): AlertResult<Unit> = delegate.alert(
         transform = { Unit },
         title = { title(it) },
@@ -44,8 +44,8 @@ class AlertDialogHostStateWithoutResult {
 
 
 @Composable
-fun AlertDialogHostWithoutResult(
-    hostState: AlertDialogHostStateWithoutResult,
+fun AlertDialogWithoutResultHost(
+    hostState: AlertDialogWithoutResultHostState,
     modifier: Modifier = Modifier,
     shape: Shape = AlertDialogDefaults.shape,
     containerColor: Color = AlertDialogDefaults.containerColor,

@@ -11,27 +11,27 @@ import androidx.compose.ui.window.DialogProperties
 import com.akari.levelcat.level.util.ArgumentBundle
 import com.akari.levelcat.level.util.ArgumentBundleScope
 
-object AlertDialogHostStateWithBundleDefaults {
+object AlertDialogWithBundleHostStateDefaults {
     val confirmButton: @Composable ArgumentBundleScope.(AlertDialogController) -> Unit
         get() = { controller ->
-            AlertDialogHostStateWithoutResultDefaults.confirmButton(controller)
+            AlertDialogHostWithoutResultStateDefaults.confirmButton(controller)
         }
     val dismissButton: @Composable ArgumentBundleScope.(AlertDialogController) -> Unit
         get() = { controller ->
-            AlertDialogHostStateWithoutResultDefaults.dismissButton(controller)
+            AlertDialogHostWithoutResultStateDefaults.dismissButton(controller)
         }
 }
 
 @Stable
-class AlertDialogHostStateWithBundle {
+class AlertDialogWithBundleHostState {
     val delegate = AlertDialogHostState<ArgumentBundle>()
 
     suspend fun alert(
         title: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = {},
         icon: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = {},
         text: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = {},
-        confirmButton: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = AlertDialogHostStateWithBundleDefaults.confirmButton,
-        dismissButton: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = AlertDialogHostStateWithBundleDefaults.dismissButton,
+        confirmButton: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = AlertDialogWithBundleHostStateDefaults.confirmButton,
+        dismissButton: @Composable ArgumentBundleScope.(controller: AlertDialogController) -> Unit = AlertDialogWithBundleHostStateDefaults.dismissButton,
     ): AlertResult<ArgumentBundle> = delegate.alert(
         transform = {
             val bundle by argument<ArgumentBundle>()
@@ -62,8 +62,8 @@ class AlertDialogHostStateWithBundle {
 
 
 @Composable
-fun AlertDialogHostWithBundle(
-    hostState: AlertDialogHostStateWithBundle,
+fun AlertDialogWithBundleHost(
+    hostState: AlertDialogWithBundleHostState,
     modifier: Modifier = Modifier,
     shape: Shape = AlertDialogDefaults.shape,
     containerColor: Color = AlertDialogDefaults.containerColor,
