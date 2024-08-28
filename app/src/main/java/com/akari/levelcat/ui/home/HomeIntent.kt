@@ -1,5 +1,12 @@
 package com.akari.levelcat.ui.home
 
 sealed interface HomeIntent {
-    data class CreateProject(val name: String, val creator: String) : HomeIntent
+    enum class SelectCreateProjectMode : HomeIntent {
+        New, Clipboard, Saf
+    }
+    sealed interface CreateProject : HomeIntent {
+        data class New(val name: String, val creator: String) : CreateProject
+        data object Clipboard : CreateProject
+        data object Saf : CreateProject
+    }
 }

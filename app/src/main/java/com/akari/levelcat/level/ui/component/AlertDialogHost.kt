@@ -2,15 +2,15 @@
 
 package com.akari.levelcat.level.ui.component
 
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
-import com.akari.levelcat.level.util.ArgumentBundle
-import com.akari.levelcat.level.util.ArgumentBundleScope
 import com.akari.levelcat.level.util.ObjScopeMaker
 import com.akari.levelcat.util.logger
 import kotlinx.coroutines.CancellableContinuation
@@ -22,22 +22,31 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-@Stable
-interface AlertDialogState {
-    val title: @Composable () -> Unit
-    val icon: @Composable () -> Unit
-    val text: @Composable AlertArgumentsScope.() -> Unit
-
+interface AlertDialogController {
     fun confirm()
     fun dismiss()
+}
+
+@Stable
+interface AlertDialogState : AlertDialogController {
+    val title: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit
+    val icon: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit
+    val text: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit
+    val confirmButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit
+    val dismissButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit
+
+    override fun confirm()
+    override fun dismiss()
 }
 
 private class AlertDialogStateImpl<T>(
     private val continuation: CancellableContinuation<AlertResult<T>>,
     private val transform: AlertArgumentsScope.() -> T,
-    override val title: @Composable () -> Unit,
-    override val icon: @Composable () -> Unit,
-    override val text: @Composable AlertArgumentsScope.() -> Unit
+    override val title: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit,
+    override val icon: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit,
+    override val text: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit,
+    override val confirmButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit,
+    override val dismissButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit,
 ) : AlertDialogState {
     val args = mutableMapOf<String, Any?>()
     val argsScope = AlertArgumentsScopeImpl(args) as AlertArgumentsScope
@@ -58,6 +67,16 @@ private class AlertDialogStateImpl<T>(
     }
 }
 
+object AlertDialogHostStateDefaults {
+    val confirmButton: @Composable AlertArgumentsScope.(AlertDialogController) -> Unit
+        get() = { controller ->
+            AlertDialogHostStateWithoutResultDefaults.confirmButton(controller)
+        }
+    val dismissButton: @Composable AlertArgumentsScope.(AlertDialogController) -> Unit
+        get() = { controller ->
+            AlertDialogHostStateWithoutResultDefaults.dismissButton(controller)
+        }
+}
 
 @Stable
 class AlertDialogHostState<out T> {
@@ -67,13 +86,23 @@ class AlertDialogHostState<out T> {
 
     suspend fun <T> alert(
         transform: AlertArgumentsScope.() -> T,
-        title: @Composable () -> Unit = {},
-        icon: @Composable () -> Unit = {},
-        text: @Composable AlertArgumentsScope.() -> Unit = {}
+        title: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit = {},
+        icon: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit = {},
+        text: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit = {},
+        confirmButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit = AlertDialogHostStateDefaults.confirmButton,
+        dismissButton: @Composable AlertArgumentsScope.(controller: AlertDialogController) -> Unit = AlertDialogHostStateDefaults.dismissButton,
     ): AlertResult<T> = mutex.withLock {
         try {
             suspendCancellableCoroutine { continuation ->
-                currentState = AlertDialogStateImpl(continuation, transform, title, icon, text)
+                currentState = AlertDialogStateImpl(
+                    continuation = continuation,
+                    transform = transform,
+                    title = title,
+                    icon = icon,
+                    text = text,
+                    confirmButton = confirmButton,
+                    dismissButton = dismissButton
+                )
             }
         } finally {
             currentState = null
@@ -141,7 +170,6 @@ sealed interface AlertResult<out T> {
     data object Dismissed : AlertResult<Nothing>
 }
 
-
 @Suppress("UNCHECKED_CAST")
 @Composable
 fun <T> AlertDialogHost(
@@ -157,14 +185,15 @@ fun <T> AlertDialogHost(
 ) {
     hostState.currentState?.let { alertDialogState ->
         alertDialogState as AlertDialogStateImpl<T>
+        val argsScope = alertDialogState.argsScope
         AlertDialog(
             modifier = modifier,
             onDismissRequest = { alertDialogState.dismiss() },
-            title = alertDialogState.title,
-            icon = alertDialogState.icon,
-            text = { alertDialogState.argsScope.also { alertDialogState.text(it) } },
-            dismissButton = { TextButton(onClick = { alertDialogState.dismiss() }) { Text("Dismiss") } },
-            confirmButton = { TextButton(onClick = { alertDialogState.confirm() }) { Text("Confirm") } },
+            title = { alertDialogState.title(argsScope, alertDialogState) },
+            icon = { alertDialogState.icon(argsScope, alertDialogState) },
+            text = { alertDialogState.text(argsScope, alertDialogState) },
+            dismissButton = { alertDialogState.dismissButton(argsScope, alertDialogState) },
+            confirmButton = { alertDialogState.confirmButton(argsScope, alertDialogState) },
             shape = shape,
             containerColor = containerColor,
             iconContentColor = iconContentColor,
@@ -174,95 +203,4 @@ fun <T> AlertDialogHost(
             properties = properties,
         )
     }
-}
-
-@Stable
-class AlertDialogHostStateWithoutResult {
-    val delegate = AlertDialogHostState<Unit>()
-
-    suspend fun alert(
-        title: @Composable () -> Unit = {},
-        icon: @Composable () -> Unit = {},
-        text: @Composable AlertArgumentsScope.() -> Unit = {}
-    ): AlertResult<Unit> = delegate.alert(
-        transform = { Unit },
-        title = title,
-        icon = icon,
-        text = text
-    )
-}
-
-
-@Composable
-fun AlertDialogHostWithoutResult(
-    hostState: AlertDialogHostStateWithoutResult,
-    modifier: Modifier = Modifier,
-    shape: Shape = AlertDialogDefaults.shape,
-    containerColor: Color = AlertDialogDefaults.containerColor,
-    iconContentColor: Color = AlertDialogDefaults.iconContentColor,
-    titleContentColor: Color = AlertDialogDefaults.titleContentColor,
-    textContentColor: Color = AlertDialogDefaults.textContentColor,
-    tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
-    properties: DialogProperties = DialogProperties()
-) {
-    AlertDialogHost(
-        hostState = hostState.delegate,
-        modifier = modifier,
-        shape = shape,
-        containerColor = containerColor,
-        iconContentColor = iconContentColor,
-        titleContentColor = titleContentColor,
-        textContentColor = textContentColor,
-        tonalElevation = tonalElevation,
-        properties = properties
-    )
-}
-
-
-@Stable
-class AlertDialogHostStateWithBundle {
-    val delegate = AlertDialogHostState<ArgumentBundle>()
-
-    suspend fun alert(
-        title: @Composable () -> Unit = {},
-        icon: @Composable () -> Unit = {},
-        text: @Composable ArgumentBundleScope.() -> Unit = {}
-    ): AlertResult<ArgumentBundle> = delegate.alert(
-        transform = {
-            val bundle by argument<ArgumentBundle>()
-            bundle
-        },
-        title = title,
-        icon = icon,
-        text = {
-            val bundle by argument { ArgumentBundle() }
-            ArgumentBundleScope(bundle).run { text() }
-        }
-    )
-}
-
-
-@Composable
-fun AlertDialogHostWithBundle(
-    hostState: AlertDialogHostStateWithBundle,
-    modifier: Modifier = Modifier,
-    shape: Shape = AlertDialogDefaults.shape,
-    containerColor: Color = AlertDialogDefaults.containerColor,
-    iconContentColor: Color = AlertDialogDefaults.iconContentColor,
-    titleContentColor: Color = AlertDialogDefaults.titleContentColor,
-    textContentColor: Color = AlertDialogDefaults.textContentColor,
-    tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
-    properties: DialogProperties = DialogProperties()
-) {
-    AlertDialogHost(
-        hostState = hostState.delegate,
-        modifier = modifier,
-        shape = shape,
-        containerColor = containerColor,
-        iconContentColor = iconContentColor,
-        titleContentColor = titleContentColor,
-        textContentColor = textContentColor,
-        tonalElevation = tonalElevation,
-        properties = properties
-    )
 }

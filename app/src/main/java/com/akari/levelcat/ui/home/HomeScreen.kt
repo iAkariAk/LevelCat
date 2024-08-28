@@ -60,52 +60,10 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        val result = intentDialogHostState.alert<HomeIntent.CreateProject>(
-                            title = { Text("Create Project") },
-                            text = {
-                                var name by mutableStateArgument {""}
-                                var creator by mutableStateArgument { "" }
-                                Column {
-                                    OutlinedPatternedTextField(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        pattern = NotBlank,
-                                        value = name,
-                                        onValueChange = { name = it },
-                                        label = { Text("Project Name") }
-                                    )
-                                    OutlinedPatternedTextField(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 8.dp),
-                                        pattern = NotBlank,
-                                        value = creator,
-                                        onValueChange = { creator = it },
-                                        label = { Text("Creator") }
-                                    )
-                                }
-                            },
-                            transform = {
-                                val name by mutableStateArgument<String>()
-                                val creator by mutableStateArgument<String>()
-                                HomeIntent.CreateProject(name, creator)
-                            }
-                        )
-                        if (result is AlertResult.Confirmed) {
-                            val intent = result.value
-                            val project = Project(
-                                name = intent.name,
-                                creator = intent.creator,
-                            )
-                            viewModel.createProject(project)
-                        }
-                    }
-                }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "add")
-            }
+            CreateProjectFab(
+                intentDialogHostState = intentDialogHostState,
+                onCreateProject = viewModel::createProject
+            )
         }
     ) { innerPadding ->
         LazyColumn(
@@ -134,73 +92,65 @@ fun HomeScreen(
 }
 
 @Composable
-private fun CreateProjectFloatingActionButton(
+private fun CreateProjectFab(
+    intentDialogHostState: AlertDialogHostState<HomeIntent>,
     onCreateProject: (Project) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
-    var isCreateAlertOpen by remember { mutableStateOf(false) }
-    var projectName by remember { mutableStateOf("") }
-    var projectCreator by remember { mutableStateOf("") }
-
-    if (isCreateAlertOpen) {
-        AlertDialog(
-            title = { Text("Create Project") },
-            text = {
-                Column {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = projectName,
-                        onValueChange = {
-                            projectName = it
-                        },
-                        label = {
-                            Text("Project Name")
-                        }
-                    )
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        value = projectCreator,
-                        onValueChange = {
-                            projectCreator = it
-                        },
-                        label = {
-                            Text("Creator")
-                        }
-                    )
-                }
-            },
-            onDismissRequest = { isCreateAlertOpen = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val project = Project(
-                        System.nanoTime(),
-                        projectName,
-                        projectCreator,
-                        System.currentTimeMillis(),
-                        level = Level.Empty
-                    )
-                    onCreateProject(project)
-                    projectName = ""
-                    projectCreator = ""
-                    isCreateAlertOpen = false
-                }) {
-                    Text("confirm")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { isCreateAlertOpen = false }) {
-                    Text("dismiss")
-                }
-            },
-        )
-    }
+    val coroutineScope = rememberCoroutineScope()
 
     FloatingActionButton(
         modifier = modifier,
         onClick = {
-            isCreateAlertOpen = true
+            coroutineScope.launch {
+                suspend fun alertCreateInfo(mode: HomeIntent.SelectCreateProjectMode) {
+                    val result = intentDialogHostState.alert(
+                        title = { Text("Create Project") },
+                        text = {
+                            var name by mutableStateArgument { "" }
+                            var creator by mutableStateArgument { "" }
+                            Column {
+                                OutlinedPatternedTextField(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    pattern = NotBlank,
+                                    value = name,
+                                    onValueChange = { name = it },
+                                    label = { Text("Project Name") }
+                                )
+                                OutlinedPatternedTextField(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
+                                    pattern = NotBlank,
+                                    value = creator,
+                                    onValueChange = { creator = it },
+                                    label = { Text("Creator") }
+                                )
+                            }
+                        },
+                        transform = {
+                            val name by mutableStateArgument<String>()
+                            val creator by mutableStateArgument<String>()
+                            HomeIntent.CreateProject.New(name, creator)
+                        }
+                    )
+                    if (result is AlertResult.Confirmed) {
+                        val intent = result.value
+                        val project = Project(
+                            name = intent.name,
+                            creator = intent.creator,
+                        )
+                        onCreateProject(project)
+                    }
+                }
+//                intentDialogHostState.alert<Unit>(
+//                    title = { Text("Select a create mode") },
+//                    text = {
+////                    TextButton(onClick = ) { }
+//                    },
+//                    transform = {}
+//                )
+            }
         }
     ) {
         Icon(Icons.Filled.Add, contentDescription = "add")
@@ -216,9 +166,6 @@ private fun ProjectItem(
     onExportProject: () -> Unit = {},
     onRenameProject: (newName: String) -> Unit = {},
 ) {
-    var newName by remember { mutableStateOf(item.name) }
-    var isEditEnabled by remember { mutableStateOf(false) }
-
     OutlinedCard(
         modifier = modifier.combinedClickable(
             onClick = onOpenProject,
