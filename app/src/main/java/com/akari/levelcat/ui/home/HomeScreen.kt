@@ -23,11 +23,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.level.model.Level
+import com.akari.levelcat.level.ui.component.AlertDialogHost
+import com.akari.levelcat.level.ui.component.AlertDialogHostState
+import com.akari.levelcat.level.ui.component.AlertResult
+import com.akari.levelcat.level.ui.component.OutlinedPatternedTextField
+import com.akari.levelcat.level.util.InputPatterns.NotBlank
 import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
 import com.akari.levelcat.ui.util.formatMillisecondAsI18nString
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.launch
+
+data class IDCard(
+    val idCard: String,
+)
 
 @Composable
 fun HomeScreen(
@@ -36,6 +46,10 @@ fun HomeScreen(
 ) {
     val navController = LocalNavController.current
     val homeUiState by viewModel.homeUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val intentDialogHostState = remember { AlertDialogHostState<HomeIntent>() }
+
+    AlertDialogHost(intentDialogHostState)
 
     Scaffold(
         modifier = modifier,
@@ -46,7 +60,52 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            CreateProjectFloatingActionButton(onCreateProject = viewModel::createProject)
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        val result = intentDialogHostState.alert<HomeIntent.CreateProject>(
+                            title = { Text("Create Project") },
+                            text = {
+                                var name by mutableStateArgument {""}
+                                var creator by mutableStateArgument { "" }
+                                Column {
+                                    OutlinedPatternedTextField(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        pattern = NotBlank,
+                                        value = name,
+                                        onValueChange = { name = it },
+                                        label = { Text("Project Name") }
+                                    )
+                                    OutlinedPatternedTextField(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp),
+                                        pattern = NotBlank,
+                                        value = creator,
+                                        onValueChange = { creator = it },
+                                        label = { Text("Creator") }
+                                    )
+                                }
+                            },
+                            transform = {
+                                val name by mutableStateArgument<String>()
+                                val creator by mutableStateArgument<String>()
+                                HomeIntent.CreateProject(name, creator)
+                            }
+                        )
+                        if (result is AlertResult.Confirmed) {
+                            val intent = result.value
+                            val project = Project(
+                                name = intent.name,
+                                creator = intent.creator,
+                            )
+                            viewModel.createProject(project)
+                        }
+                    }
+                }
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "add")
+            }
         }
     ) { innerPadding ->
         LazyColumn(

@@ -12,7 +12,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import com.akari.levelcat.level.util.InputPattern
 import com.akari.levelcat.level.util.match
-import com.akari.levelcat.util.logger
 
 @Composable
 fun PatternedTextField(
@@ -116,7 +115,6 @@ fun OutlinedPatternedTextField(
             onValueChange(it)
             if (pattern.match(it)) {
                 isError = false
-                logger.info("value validated $it")
                 onValueValidated(it)
             } else {
                 isError = true

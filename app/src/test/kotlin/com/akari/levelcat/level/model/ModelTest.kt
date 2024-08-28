@@ -1,6 +1,7 @@
 package com.akari.levelcat.level.model
 
 import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.util.Json
 import kotlinx.serialization.encodeToString
 import kotlin.test.Test
@@ -80,7 +81,7 @@ class ModelTest {
                     startingSun = 50,
                     startingWave = 9,
                     startingTime = 2400,
-                    allowedZombies = listOf(0, 2, 4, 6, 5, 8, 17, 18, 23),
+                    allowedZombies = listOf(0, 2, 4, 6, 5, 8, 17, 18, 23).mapNotNull(ZombieType.Companion::ofId),
                 )
             )
         )

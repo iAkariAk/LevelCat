@@ -6,10 +6,10 @@ import com.akari.levelcat.level.model.component.LevelProperty
 
 @Stable
 data class Project(
-    val id: Long,
+    val id: Long = System.nanoTime(),
     val name: String,
     val creator: String,
-    val lastModifyTime: Long,
+    val lastModifyTime: Long = System.currentTimeMillis(),
     val level: Level =  Level(
         version = 1,
         components = listOf(

@@ -86,4 +86,8 @@ enum class ZombieType(override val id: Int) : ConstantEnum {
     Darkhold(id = 77), ;
 
     override val displayName get() = name // FIXME i18n
+
+    companion object {
+        fun ofId(id: Int) = entries.find { it.id == id }
+    }
 }
