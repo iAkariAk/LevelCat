@@ -31,4 +31,3 @@ fun Editor(
         onComponentDelete = onComponentDelete,
     )
 }
-

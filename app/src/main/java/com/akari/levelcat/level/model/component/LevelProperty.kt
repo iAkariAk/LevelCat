@@ -63,21 +63,25 @@ data class LevelProperty(
         startingWave = startingWave?.toString() ?: "",
         wavesPerFlag = wavesPerFlag?.toString() ?: ""
     )
+
+    companion object {
+        val Empty = LevelProperty()
+    }
 }
 
 
 data class LevelPropertyState(
-    val allowedZombies: List<ZombieType>,
-    val background: String,
-    val creator: String,
-    val easyUpgrade: String,
-    val initPlantColumn: String,
-    val name: String,
-    val numWaves: String,
-    val startingSun: String,
-    val startingTime: String,
-    val startingWave: String,
-    val wavesPerFlag: String,
+    val allowedZombies: List<ZombieType> = emptyList(),
+    val background: String = "",
+    val creator: String = "",
+    val easyUpgrade: String = "",
+    val initPlantColumn: String = "",
+    val name: String = "",
+    val numWaves: String = "",
+    val startingSun: String = "",
+    val startingTime: String = "",
+    val startingWave: String = "",
+    val wavesPerFlag: String = "",
 ) : ComponentState<LevelProperty> {
     override fun toComponent() = LevelProperty(
         allowedZombies = allowedZombies,
@@ -92,6 +96,10 @@ data class LevelPropertyState(
         startingWave = startingWave.toIntOrNull(),
         wavesPerFlag = wavesPerFlag.toIntOrNull(),
     )
+
+    companion object {
+        val Empty = LevelPropertyState()
+    }
 }
 
 @Composable
