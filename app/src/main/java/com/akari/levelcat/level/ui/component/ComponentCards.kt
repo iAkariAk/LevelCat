@@ -1,12 +1,16 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package com.akari.levelcat.level.ui.component
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -17,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -217,11 +222,23 @@ fun <T> ComponentListField(
                 }
             }
             HorizontalDivider()
+            val listState = rememberLazyListState()
             LazyColumn(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                state = listState,
             ) {
-                items(items) { item ->
-                    itemContent(item, { items - item })
+                itemsIndexed(items) { index, item ->
+                    val scale = remember { Animatable(0.3f)}
+                    LaunchedEffect(Unit) {
+                        scale.animateTo(1f, tween(1000))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .animateItemPlacement()
+                            .graphicsLayer(scaleX = scale.value, scaleY = scale.value),
+                    ) {
+                        itemContent(item, { items - item })
+                    }
                 }
             }
         }

@@ -1,5 +1,8 @@
 package com.akari.levelcat.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,7 +23,17 @@ fun LevelcatNavHost(modifier: Modifier = Modifier) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = NavigationDestination.Home.route
+        startDestination = NavigationDestination.Home.route,
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(1000)
+            )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = tween(1000)
+            )
+        }
     ) {
         NavigationDestination.entries.forEach { destination ->
             composable(

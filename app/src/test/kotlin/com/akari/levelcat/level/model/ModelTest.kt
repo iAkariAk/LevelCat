@@ -1,6 +1,7 @@
 package com.akari.levelcat.level.model
 
 import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.model.constant.BackgroundType
 import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.util.Json
 import kotlinx.serialization.encodeToString
@@ -73,7 +74,7 @@ class ModelTest {
                 LevelProperty(
                     name = "Play Now",
                     creator = "Wind",
-                    background = 1,
+                    background = BackgroundType.Day,
                     initPlantColumn = 0,
                     easyUpgrade = false,
                     numWaves = 30,

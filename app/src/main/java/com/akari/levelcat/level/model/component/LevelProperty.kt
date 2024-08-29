@@ -53,7 +53,7 @@ data class LevelProperty(
 ) : Component {
     override fun asState() = LevelPropertyState(
         allowedZombies = allowedZombies ?: emptyList(),
-        background = background ?: BackgroundType.Background0,
+        background = background ?: BackgroundType.Day,
         easyUpgrade = easyUpgrade ?: false /*?.toString() ?: ""*/,
         initPlantColumn = initPlantColumn?.toString() ?: "",
         name = name ?: "",
@@ -70,10 +70,9 @@ data class LevelProperty(
     }
 }
 
-
 data class LevelPropertyState(
     val allowedZombies: List<ZombieType> = emptyList(),
-    val background: BackgroundType = BackgroundType.Background0,
+    val background: BackgroundType = BackgroundType.Day,
     val creator: String = "",
     val easyUpgrade: Boolean = false,
     val initPlantColumn: String = "",
