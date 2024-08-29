@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.ConstantEnum
 import com.akari.levelcat.level.util.InputPattern
+import com.akari.levelcat.ui.component.OutlinedPatternedTextField
 import kotlin.enums.enumEntries
 
 

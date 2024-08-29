@@ -1,4 +1,4 @@
-package com.akari.levelcat.level.ui.component
+package com.akari.levelcat.ui.component
 
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.runtime.Composable

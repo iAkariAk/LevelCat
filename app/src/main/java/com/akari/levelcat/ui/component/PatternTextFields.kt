@@ -1,4 +1,4 @@
-package com.akari.levelcat.level.ui.component
+package com.akari.levelcat.ui.component
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
