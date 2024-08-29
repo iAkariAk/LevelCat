@@ -17,8 +17,10 @@ import com.akari.levelcat.level.model.constant.BackgroundType
 import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.ui.component.*
 import com.akari.levelcat.level.util.InputPatterns
+import com.akari.levelcat.level.util.InputPatterns.EmptyOnly
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
 import com.akari.levelcat.level.util.copyUnsafely
+import com.akari.levelcat.level.util.or
 import com.akari.levelcat.level.util.patternOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -102,7 +104,8 @@ data class LevelPropertyState(
 }
 
 
-private val NotHighViewCreator = patternOf("你不是真正的高视角！") { it != "高视角" } // Easter Egg!
+private val CreatorPattern = patternOf("你不是真正的高视角！") { it != "高视角" } // Easter Egg!
+private val InitPlantColumnPattern = InputPatterns.IntRange(0..9) or EmptyOnly
 
 @Composable
 fun LevelPropertyEditor(
@@ -122,8 +125,8 @@ fun LevelPropertyEditor(
     ) {
         listOf(
             Triple("Name", componentState::name, null),
-            Triple("Creator", componentState::creator, NotHighViewCreator),
-            Triple("InitPlantColumn", componentState::initPlantColumn, InputPatterns.IntRange(0..9)),
+            Triple("Creator", componentState::creator, CreatorPattern),
+            Triple("InitPlantColumn", componentState::initPlantColumn, InitPlantColumnPattern),
             Triple("NumWaves", componentState::numWaves, IntOrEmpty),
 //            Triple("Background", componentState::background, InputPatterns.IntRange(0..19)),
 //            Triple("EasyUpgrade", componentState::easyUpgrade, BooleanOrEmpty),

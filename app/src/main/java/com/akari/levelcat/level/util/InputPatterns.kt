@@ -51,6 +51,7 @@ infix fun InputPattern.xor(other: InputPattern) =
 
 @Suppress("MemberVisibilityCanBePrivate")
 object InputPatterns {
+    val Any = patternOf { true }
     val EmptyOnly = patternOf("Value must be empty") { it.isEmpty() }
     val IntOnly = patternOf("Value must be an integer") { it.toIntOrNull() != null }
     val BooleanOnly =

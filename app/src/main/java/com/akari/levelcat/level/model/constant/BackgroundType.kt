@@ -1,7 +1,10 @@
 package com.akari.levelcat.level.model.constant
 
+import kotlinx.serialization.Serializable
+
 object BackgroundSerializer : ConstantEnumSerializer<BackgroundType>(BackgroundType.entries)
 
+@Serializable(with = BackgroundSerializer::class)
 enum class BackgroundType(
     override val id: Int
 ) : ConstantEnum {
