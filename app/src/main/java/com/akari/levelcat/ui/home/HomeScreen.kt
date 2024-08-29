@@ -91,6 +91,51 @@ fun HomeScreen(
     }
 }
 
+private suspend fun alertForNew(
+    dialogHostState: AlertDialogHostState<HomeIntent>,
+    onCreateProject: (Project) -> Unit,
+) {
+    val result = dialogHostState.alert(
+        title = { Text("Create Project") },
+        text = {
+            var name by mutableStateArgument { "" }
+            var creator by mutableStateArgument { "" }
+            Column {
+                OutlinedPatternedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    pattern = NotBlank,
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Project Name") }
+                )
+                OutlinedPatternedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    pattern = NotBlank,
+                    value = creator,
+                    onValueChange = { creator = it },
+                    label = { Text("Creator") }
+                )
+            }
+        },
+        transform = {
+            val name by mutableStateArgument<String>()
+            val creator by mutableStateArgument<String>()
+            HomeIntent.CreateProject.New(name, creator)
+        }
+    )
+    if (result is AlertResult.Confirmed) {
+        val intent = result.value
+        val project = Project(
+            name = intent.name,
+            creator = intent.creator,
+        )
+        onCreateProject(project)
+    }
+}
+
+
 @Composable
 private fun CreateProjectFab(
     intentDialogHostState: AlertDialogHostState<HomeIntent>,
@@ -102,47 +147,6 @@ private fun CreateProjectFab(
     FloatingActionButton(
         modifier = modifier,
         onClick = {
-            fun alertCreateInfo(mode: HomeIntent.SelectCreateProjectMode) = coroutineScope.launch {
-                val result = intentDialogHostState.alert(
-                    title = { Text("Create Project") },
-                    text = {
-                        var name by mutableStateArgument { "" }
-                        var creator by mutableStateArgument { "" }
-                        Column {
-                            OutlinedPatternedTextField(
-                                modifier = Modifier.fillMaxWidth(),
-                                pattern = NotBlank,
-                                value = name,
-                                onValueChange = { name = it },
-                                label = { Text("Project Name") }
-                            )
-                            OutlinedPatternedTextField(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp),
-                                pattern = NotBlank,
-                                value = creator,
-                                onValueChange = { creator = it },
-                                label = { Text("Creator") }
-                            )
-                        }
-                    },
-                    transform = {
-                        val name by mutableStateArgument<String>()
-                        val creator by mutableStateArgument<String>()
-                        HomeIntent.CreateProject.New(name, creator)
-                    }
-                )
-                if (result is AlertResult.Confirmed) {
-                    val intent = result.value
-                    val project = Project(
-                        name = intent.name,
-                        creator = intent.creator,
-                    )
-                    onCreateProject(project)
-                }
-            }
-
             coroutineScope.launch {
                 intentDialogHostState.alert(
                     title = { Text("Select a create mode") },
@@ -152,14 +156,19 @@ private fun CreateProjectFab(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     controller.dismiss()
-                                    alertCreateInfo(HomeIntent.SelectCreateProjectMode.New)
+                                    coroutineScope.launch {
+                                        alertForNew(
+                                            dialogHostState = intentDialogHostState,
+                                            onCreateProject = onCreateProject
+                                        )
+                                    }
                                 }
                             ) { Text("New") }
                             TextButton(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     controller.dismiss()
-                                    alertCreateInfo(HomeIntent.SelectCreateProjectMode.Clipboard)
+//                                    alertCreateInfo(HomeIntent.SelectCreateProjectMode.Clipboard)
                                 }
                             ) { Text("Clipboard") }
                         }

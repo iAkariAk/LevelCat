@@ -30,4 +30,8 @@ fun Editor(
         onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
     )
+    ColumnPlantingState -> ColumnPlanting(
+        modifier = modifier,
+        onComponentDelete = onComponentDelete,
+    )
 }

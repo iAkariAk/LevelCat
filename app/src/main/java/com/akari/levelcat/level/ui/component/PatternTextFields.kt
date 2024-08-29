@@ -18,6 +18,8 @@ fun PatternedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onValueValidated: (String) -> Unit = {},
+    onValueUnvalidated: (String) -> Unit = {},
     pattern: InputPattern? = null,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -38,15 +40,15 @@ fun PatternedTextField(
     shape: Shape = TextFieldDefaults.shape,
     colors: TextFieldColors = TextFieldDefaults.colors(),
 ) {
-    var isError by rememberSaveable { mutableStateOf(!pattern.match(value)) }
+    var isError by rememberSaveable(value) { mutableStateOf(!pattern.match(value)) }
     TextField(
         value = value,
         onValueChange = {
-            if (pattern?.match(it) ?: true) {
-                isError = false
-                onValueChange(it)
+            onValueChange(it)
+            if (!isError) {
+                onValueValidated(it)
             } else {
-                isError = true
+                onValueUnvalidated(it)
             }
         },
         modifier = modifier,
@@ -108,16 +110,14 @@ fun OutlinedPatternedTextField(
     shape: Shape = OutlinedTextFieldDefaults.shape,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
 ) {
-    var isError by rememberSaveable { mutableStateOf(!pattern.match(value)) }
+    var isError by rememberSaveable(value) { mutableStateOf(!pattern.match(value)) }
     OutlinedTextField(
         value = value,
         onValueChange = {
             onValueChange(it)
-            if (pattern.match(it)) {
-                isError = false
+            if (!isError) {
                 onValueValidated(it)
             } else {
-                isError = true
                 onValueUnvalidated(it)
             }
         },

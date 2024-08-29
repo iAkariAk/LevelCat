@@ -12,6 +12,8 @@ import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.data.repository.ProjectRepository
 import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.model.component.ComponentState
+import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.model.component.LevelPropertyState
 import com.akari.levelcat.ui.navigation.ARG_EDITOR_ID
 import com.akari.levelcat.util.logger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -88,17 +90,14 @@ class EditorViewModel @Inject constructor(
 
     fun addComponent(component: ComponentState<*>) = viewModelScope.launch {
         mutableComponents.putIfAbsent(component::class, component)
-//        mutableComponents = mutableComponents + (component::class to component)
     }
 
     fun updateComponent(component: ComponentState<*>) {
         mutableComponents[component::class] = component
-//        mutableComponents = mutableComponents + (component::class to component)
     }
 
     fun removeComponent(component: ComponentState<*>) {
         mutableComponents.remove(component::class)
-//        mutableComponents = mutableComponents - (component::class)
     }
 
     fun save() = viewModelScope.launch {
@@ -113,7 +112,7 @@ class EditorViewModel @Inject constructor(
 data class EditorUiState(
     val projectId: Long,
     val projectName: String,
-    val projectCreate: String,
+    val projectCreator: String,
     val projectSdkVersion: Int,
     val components: List<ComponentState<*>>,
 ) {
@@ -121,22 +120,27 @@ data class EditorUiState(
         val Empty = EditorUiState(
             projectId = 0,
             projectName = "",
-            projectCreate = "",
+            projectCreator = "",
             projectSdkVersion = 0,
             components = emptyList()
         )
     }
 }
 
-fun EditorUiState.toProject() = Project(
-    id = projectId,
-    name = projectName,
-    creator = projectCreate,
-    lastModifyTime = System.currentTimeMillis(),
-    level = Level(
-        version = projectSdkVersion,
-        components = components.map(ComponentState<*>::toComponent)
+fun EditorUiState.toProject(): Project {
+    val levelProperty = components
+        .find { it is LevelPropertyState }
+        ?.toComponent() as? LevelProperty
+    return Project(
+        id = projectId,
+        name = levelProperty?.name ?: projectName,
+        creator = levelProperty?.creator ?: projectCreator,
+        lastModifyTime = System.currentTimeMillis(),
+        level = Level(
+            version = projectSdkVersion,
+            components = components.map(ComponentState<*>::toComponent)
+        )
     )
-)
+}
 
 

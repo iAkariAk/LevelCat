@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -120,6 +121,26 @@ fun ComponentTextField(
 }
 
 @Composable
+fun ComponentSwitch(
+    propertyName: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(propertyName)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+        )
+    }
+}
+
+@Composable
 inline fun <reified E> ComponentEnumField(
     propertyName: String,
     entry: E,
@@ -161,6 +182,7 @@ inline fun <reified E> ComponentEnumField(
     }
 }
 
+
 @Composable
 fun <T> ComponentListField(
     propertyName: String,
@@ -197,7 +219,7 @@ fun <T> ComponentListField(
             HorizontalDivider()
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
-            )  {
+            ) {
                 items(items) { item ->
                     itemContent(item, { items - item })
                 }

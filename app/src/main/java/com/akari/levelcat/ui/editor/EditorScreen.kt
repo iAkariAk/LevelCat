@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.akari.levelcat.level.model.component.ColumnPlantingState
 import com.akari.levelcat.level.model.component.ComponentState
 import com.akari.levelcat.level.model.component.Editor
 import com.akari.levelcat.level.model.component.LevelPropertyState
@@ -74,7 +75,6 @@ fun EditorScreen(
             )
         }
     ) { innerPadding ->
-
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             items(editorUiState.components) { componentState ->
                 Editor(
@@ -110,7 +110,8 @@ private fun EditorFab(
                     title = { Text("Selected a component type") },
                     text = { controller ->
                         val components = listOf(
-                            "LevelProperty" to LevelPropertyState.Empty
+                            "LevelProperty" to LevelPropertyState.Empty,
+                            "Column Planting" to ColumnPlantingState
                         ).filterNot { (_, state) ->
                             editorUiState.components.any { it::class == state::class }
                         }
