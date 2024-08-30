@@ -5,8 +5,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import kotlinx.serialization.Serializable
 
-@Serializable
 @Stable
+@Serializable
 sealed interface Component {
     fun asState(): ComponentState<Component>
 }
@@ -30,8 +30,15 @@ fun Editor(
         onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
     )
+    is SeedBankState -> SeedBank(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentStateChange = onComponentStateChange,
+        onComponentDelete = onComponentDelete,
+    )
     ColumnPlantingState -> ColumnPlanting(
         modifier = modifier,
+        componentState = ColumnPlantingState,
         onComponentDelete = onComponentDelete,
     )
 }

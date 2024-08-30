@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.akari.levelcat.BuildConfig
 import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.data.repository.ProjectRepository
+import com.akari.levelcat.level.model.Level
+import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.util.Json
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,8 +38,16 @@ class HomeViewModel @Inject constructor(
 
     fun importProjectFromClipboard()  = viewModelScope.launch {
         clipboardManager.primaryClip?.let { data ->
-            val importedJson = data.toString()
-            val project = Json.decodeFromString<Project>(importedJson)
+            val importedJson = data.getItemAt(0).text.toString()
+            val level = Json.decodeFromString<Level>(importedJson)
+            val levelProperty = level.components.find { it is LevelProperty } as LevelProperty?
+            val id = System.nanoTime()
+            val project = Project(
+                id = id,
+                name = levelProperty?.name ?: "Unnamed $id",
+                creator = levelProperty?.creator ?: "Unnamed $id",
+                level = level
+            )
             createProject(project)
         }
     }

@@ -4,7 +4,6 @@ package com.akari.levelcat.ui.editor
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,10 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.akari.levelcat.level.model.component.ColumnPlantingState
-import com.akari.levelcat.level.model.component.ComponentState
-import com.akari.levelcat.level.model.component.Editor
-import com.akari.levelcat.level.model.component.LevelPropertyState
+import com.akari.levelcat.level.model.component.*
 import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.component.AlertDialogHost
 import com.akari.levelcat.ui.component.AlertDialogHostState
@@ -81,7 +77,8 @@ fun EditorScreen(
                 Editor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp),
+                        .padding(4.dp)
+                        .animateEnter(),
                     componentState = componentState,
                     onComponentStateChange = {
                         logger.info("onComponentChange: $it")
@@ -112,14 +109,14 @@ private fun EditorFab(
                     text = { controller ->
                         val components = listOf(
                             "LevelProperty" to LevelPropertyState.Empty,
-                            "Column Planting" to ColumnPlantingState
+                            "ColumnPlanting" to ColumnPlantingState,
+                            "SeedBank" to SeedBankState.Empty,
                         ).filterNot { (_, state) ->
                             editorUiState.components.any { it::class == state::class }
                         }
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp)
                         ) {
                             items(components) { (name, componentState) ->
                                 TextButton(
@@ -137,7 +134,7 @@ private fun EditorFab(
                             if (components.isEmpty()) {
                                 item {
                                     Box(
-                                        modifier = Modifier.fillParentMaxSize(),
+                                        modifier = Modifier.fillMaxWidth(),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text("Empty...")

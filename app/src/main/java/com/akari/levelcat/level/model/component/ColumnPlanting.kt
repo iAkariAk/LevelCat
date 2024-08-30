@@ -20,12 +20,13 @@ data object ColumnPlantingState : ComponentState<ColumnPlanting> {
 
 @Composable
 fun ColumnPlanting(
+    componentState: ColumnPlantingState,
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ComponentCard(
         modifier = modifier,
-        componentName = "Column Planting",
+        componentName = "ColumnPlanting",
         onComponentDelete = onComponentDelete,
     ) {
         Spacer(
