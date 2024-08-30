@@ -1,14 +1,15 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.akari.levelcat.level.model.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,8 +128,6 @@ fun LevelPropertyEditor(
             Triple("Creator", componentState::creator, CreatorPattern),
             Triple("InitPlantColumn", componentState::initPlantColumn, InitPlantColumnPattern),
             Triple("NumWaves", componentState::numWaves, IntOrEmpty),
-//            Triple("Background", componentState::background, InputPatterns.IntRange(0..19)),
-//            Triple("EasyUpgrade", componentState::easyUpgrade, BooleanOrEmpty),
         ).forEach { (name, property, pattern) ->
             ComponentTextField(
                 propertyName = name,
@@ -167,7 +166,9 @@ fun LevelPropertyEditor(
             initialItem = { ZombieType.Boss },
             itemContent = { item, onItemDelete ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -176,6 +177,8 @@ fun LevelPropertyEditor(
                         Icon(Icons.Default.Delete, null)
                     }
                 }
+
+
             },
         )
     }

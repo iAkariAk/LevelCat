@@ -6,7 +6,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -25,19 +25,15 @@ import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.util.InputPatterns.NotBlank
 import com.akari.levelcat.ui.LevelcatTopAppBar
-import com.akari.levelcat.ui.component.AlertDialogHost
-import com.akari.levelcat.ui.component.AlertDialogHostState
-import com.akari.levelcat.ui.component.AlertResult
-import com.akari.levelcat.ui.component.OutlinedPatternedTextField
+import com.akari.levelcat.ui.component.*
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
 import com.akari.levelcat.ui.util.formatMillisecondAsI18nString
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
-data class IDCard(
-    val idCard: String,
-)
+private typealias HomeIntentDialogHostState = AlertDialogHostState<HomeIntent>
 
 @Composable
 fun HomeScreen(
@@ -46,8 +42,7 @@ fun HomeScreen(
 ) {
     val navController = LocalNavController.current
     val homeUiState by viewModel.homeUiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
-    val intentDialogHostState = remember { AlertDialogHostState<HomeIntent>() }
+    val intentDialogHostState = remember { HomeIntentDialogHostState() }
 
     AlertDialogHost(intentDialogHostState)
 
@@ -62,7 +57,8 @@ fun HomeScreen(
         floatingActionButton = {
             CreateProjectFab(
                 intentDialogHostState = intentDialogHostState,
-                onCreateProject = viewModel::createProject
+                onCreateProject = viewModel::createProject,
+                onImportProjectFromClipboard = viewModel::importProjectFromClipboard
             )
         }
     ) { innerPadding ->
@@ -70,12 +66,13 @@ fun HomeScreen(
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-            itemsIndexed(homeUiState.projects) { index, item ->
+            items(items = homeUiState.projects, key = { it.id }) { item ->
                 Spacer(modifier = Modifier.height(4.dp))
                 ProjectItem(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(160.dp),
+                        .height(160.dp)
+                        .animateEnter(),
                     item = item,
                     onDeleteProject = { viewModel.deleteProject(item) },
                     onRenameProject = { viewModel.renameProject(item, it) },
@@ -91,11 +88,77 @@ fun HomeScreen(
     }
 }
 
-private suspend fun alertForNew(
-    dialogHostState: AlertDialogHostState<HomeIntent>,
+
+@Composable
+private fun CreateProjectFab(
+    intentDialogHostState: AlertDialogHostState<HomeIntent>,
+    onCreateProject: (Project) -> Unit,
+    onImportProjectFromClipboard: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    FloatingActionButton(
+        modifier = modifier,
+        onClick = {
+            coroutineScope.launch {
+                intentDialogHostState.alertSelectCreateMode(
+                    onCreateProject = onCreateProject,
+                    onImportProjectFromClipboard = onImportProjectFromClipboard,
+                )
+            }
+        }
+    ) {
+        Icon(Icons.Filled.Add, contentDescription = "add")
+    }
+}
+
+
+private suspend fun HomeIntentDialogHostState.alertSelectCreateMode(
+    onCreateProject: (Project) -> Unit,
+    onImportProjectFromClipboard: () -> Unit
+) = coroutineScope {
+    val result = alert(
+        title = { Text("Select a create mode") },
+        text = { controller ->
+            var mode by argument { HomeIntent.SelectCreateProjectMode.New }
+            Column {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        mode = HomeIntent.SelectCreateProjectMode.New
+                        controller.confirm()
+                    }
+                ) { Text("New") }
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        mode = HomeIntent.SelectCreateProjectMode.Clipboard
+                        controller.confirm()
+                    }
+                ) { Text("Clipboard") }
+            }
+        },
+        dismissButton = {},
+        confirmButton = {},
+        transform = {
+            val mode by argument<HomeIntent.SelectCreateProjectMode>()
+            mode
+        }
+    )
+    if (result is AlertResult.Confirmed) {
+        when (result.value) {
+            HomeIntent.SelectCreateProjectMode.New -> alertForNew(onCreateProject)
+            HomeIntent.SelectCreateProjectMode.Clipboard -> onImportProjectFromClipboard()
+            HomeIntent.SelectCreateProjectMode.System -> TODO("Import from system")
+        }
+    }
+}
+
+private suspend fun HomeIntentDialogHostState.alertForNew(
     onCreateProject: (Project) -> Unit,
 ) {
-    val result = dialogHostState.alert(
+    val result = alert(
         title = { Text("Create Project") },
         text = {
             var name by mutableStateArgument { "" }
@@ -135,53 +198,6 @@ private suspend fun alertForNew(
     }
 }
 
-
-@Composable
-private fun CreateProjectFab(
-    intentDialogHostState: AlertDialogHostState<HomeIntent>,
-    onCreateProject: (Project) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val coroutineScope = rememberCoroutineScope()
-
-    FloatingActionButton(
-        modifier = modifier,
-        onClick = {
-            coroutineScope.launch {
-                intentDialogHostState.alert(
-                    title = { Text("Select a create mode") },
-                    text = { controller ->
-                        Column {
-                            TextButton(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    controller.dismiss()
-                                    coroutineScope.launch {
-                                        alertForNew(
-                                            dialogHostState = intentDialogHostState,
-                                            onCreateProject = onCreateProject
-                                        )
-                                    }
-                                }
-                            ) { Text("New") }
-                            TextButton(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    controller.dismiss()
-//                                    alertCreateInfo(HomeIntent.SelectCreateProjectMode.Clipboard)
-                                }
-                            ) { Text("Clipboard") }
-                        }
-                    },
-                    transform = {}
-                )
-            }
-        }
-    ) {
-        Icon(Icons.Filled.Add, contentDescription = "add")
-    }
-}
-
 @Composable
 private fun ProjectItem(
     item: Project,
@@ -202,29 +218,36 @@ private fun ProjectItem(
                 .fillMaxSize()
                 .padding(2.dp)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
-                            append("Creator: ")
-                        }
-                        append(item.creator)
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            Row(modifier = Modifier.align(Alignment.TopEnd)) {
-                IconButton(onClick = onExportProject) {
-                    Icon(Icons.Outlined.ContentCopy, contentDescription = null)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column {
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+                                append("Creator: ")
+                            }
+                            append(item.creator)
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 }
-                IconButton(onClick = onDeleteProject) {
-                    Icon(Icons.Outlined.Delete, contentDescription = null)
+                Row {
+                    IconButton(onClick = onExportProject) {
+                        Icon(Icons.Outlined.ContentCopy, contentDescription = null)
+                    }
+                    IconButton(onClick = onDeleteProject) {
+                        Icon(Icons.Outlined.Delete, contentDescription = null)
+                    }
                 }
             }
+
             Text(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 text = buildAnnotatedString {

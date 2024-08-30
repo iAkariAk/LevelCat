@@ -34,6 +34,14 @@ class HomeViewModel @Inject constructor(
         projectRepository.insertProject(project)
     }
 
+    fun importProjectFromClipboard()  = viewModelScope.launch {
+        clipboardManager.primaryClip?.let { data ->
+            val importedJson = data.toString()
+            val project = Json.decodeFromString<Project>(importedJson)
+            createProject(project)
+        }
+    }
+
     fun deleteProject(project: Project) = viewModelScope.launch {
         projectRepository.deleteProject(project)
     }

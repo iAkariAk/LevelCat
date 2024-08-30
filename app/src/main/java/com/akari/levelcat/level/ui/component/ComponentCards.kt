@@ -2,14 +2,12 @@
 
 package com.akari.levelcat.level.ui.component
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,13 +19,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.ConstantEnum
 import com.akari.levelcat.level.util.InputPattern
 import com.akari.levelcat.ui.component.OutlinedPatternedTextField
+import com.akari.levelcat.ui.component.animateEnter
 import kotlin.enums.enumEntries
 
 
@@ -40,7 +38,7 @@ fun ComponentCard(
     colors: CardColors = CardDefaults.outlinedCardColors(),
     elevation: CardElevation = CardDefaults.outlinedCardElevation(),
     border: BorderStroke = CardDefaults.outlinedCardBorder(),
-    editAreaContent: @Composable /*ComponentCardScope.*/() -> Unit,
+    editAreaContent: @Composable () -> Unit,
 ) {
     OutlinedCard(
         modifier = modifier,
@@ -196,6 +194,7 @@ fun <T> ComponentListField(
     onItemChange: (List<T>) -> Unit,
     initialItem: () -> T,
     itemContent: @Composable (item: T, onItemDelete: () -> Unit) -> Unit,
+    itemKey: ((item: T) -> Any)? = null,
     modifier: Modifier = Modifier,
     shape: Shape = CardDefaults.outlinedShape,
     colors: CardColors = CardDefaults.outlinedCardColors(),
@@ -228,17 +227,16 @@ fun <T> ComponentListField(
                 modifier = Modifier.fillMaxWidth(),
                 state = listState,
             ) {
-                itemsIndexed(items) { index, item ->
-                    val scale = remember { Animatable(0.3f)}
-                    LaunchedEffect(Unit) {
-                        scale.animateTo(1f, tween(1000))
-                    }
+                items(
+                    items = items,
+                    key = itemKey,
+                ) { item ->
                     Box(
                         modifier = Modifier
                             .animateItemPlacement()
-                            .graphicsLayer(scaleX = scale.value, scaleY = scale.value),
+                            .animateEnter(),
                     ) {
-                        itemContent(item, { items - item })
+                        itemContent(item, { onItemChange(items - item) })
                     }
                 }
             }

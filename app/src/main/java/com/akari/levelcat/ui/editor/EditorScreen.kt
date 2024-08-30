@@ -21,9 +21,10 @@ import com.akari.levelcat.level.model.component.ColumnPlantingState
 import com.akari.levelcat.level.model.component.ComponentState
 import com.akari.levelcat.level.model.component.Editor
 import com.akari.levelcat.level.model.component.LevelPropertyState
+import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.component.AlertDialogHost
 import com.akari.levelcat.ui.component.AlertDialogHostState
-import com.akari.levelcat.ui.LevelcatTopAppBar
+import com.akari.levelcat.ui.component.animateEnter
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
 import com.akari.levelcat.util.logger
@@ -122,7 +123,9 @@ private fun EditorFab(
                         ) {
                             items(components) { (name, componentState) ->
                                 TextButton(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateEnter(),
                                     onClick = {
                                         controller.dismiss()
                                         onAddComponent(componentState)
