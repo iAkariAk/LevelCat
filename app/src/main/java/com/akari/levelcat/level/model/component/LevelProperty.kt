@@ -1,17 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.akari.levelcat.level.model.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.BackgroundType
@@ -20,9 +11,9 @@ import com.akari.levelcat.level.ui.component.*
 import com.akari.levelcat.level.util.InputPatterns
 import com.akari.levelcat.level.util.InputPatterns.EmptyOnly
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
-import com.akari.levelcat.level.util.copyUnsafely
 import com.akari.levelcat.level.util.or
 import com.akari.levelcat.level.util.patternOf
+import com.akari.levelcat.ui.component.EnumText
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -71,19 +62,32 @@ data class LevelProperty(
     }
 }
 
-data class LevelPropertyState(
-    val allowedZombies: List<ZombieType> = emptyList(),
-    val background: BackgroundType = BackgroundType.Day,
-    val creator: String = "",
-    val easyUpgrade: Boolean = false,
-    val initPlantColumn: String = "",
-    val name: String = "",
-    val numWaves: String = "",
-    val startingSun: String = "",
-    val startingTime: String = "",
-    val startingWave: String = "",
-    val wavesPerFlag: String = "",
+@Stable
+class LevelPropertyState(
+    allowedZombies: List<ZombieType> = emptyList(),
+    background: BackgroundType = BackgroundType.Day,
+    creator: String = "",
+    easyUpgrade: Boolean = false,
+    initPlantColumn: String = "",
+    name: String = "",
+    numWaves: String = "",
+    startingSun: String = "",
+    startingTime: String = "",
+    startingWave: String = "",
+    wavesPerFlag: String = "",
 ) : ComponentState<LevelProperty> {
+    val allowedZombies = allowedZombies.toMutableStateList()
+    var background by mutableStateOf(background)
+    var creator by mutableStateOf(creator)
+    var easyUpgrade by mutableStateOf(easyUpgrade)
+    var initPlantColumn by mutableStateOf(initPlantColumn)
+    var name by mutableStateOf(name)
+    var numWaves by mutableStateOf(numWaves)
+    var startingSun by mutableStateOf(startingSun)
+    var startingTime by mutableStateOf(startingTime)
+    var startingWave by mutableStateOf(startingWave)
+    var wavesPerFlag by mutableStateOf(wavesPerFlag)
+
     override fun toComponent() = LevelProperty(
         allowedZombies = allowedZombies,
         background = background,
@@ -111,13 +115,8 @@ private val InitPlantColumnPattern = InputPatterns.IntRange(0..9) or EmptyOnly
 fun LevelPropertyEditor(
     modifier: Modifier,
     componentState: LevelPropertyState,
-    onComponentStateChange: (LevelPropertyState) -> Unit,
     onComponentDelete: () -> Unit,
 ) {
-    fun updateState(updateBlock: (old: LevelPropertyState) -> LevelPropertyState) {
-        onComponentStateChange(updateBlock(componentState))
-    }
-
     ComponentCard(
         modifier = modifier,
         componentName = "LevelProperty",
@@ -133,17 +132,14 @@ fun LevelPropertyEditor(
                 propertyName = name,
                 pattern = pattern,
                 value = property.get(),
-                onValueChange = {
-                    val newComponentState = componentState.copyUnsafely(mapOf(property.name to it))
-                    onComponentStateChange(newComponentState)
-                },
+                onValueChange = property::set,
             )
         }
         ComponentEnumField<BackgroundType>(
             propertyName = "Background",
             entry = componentState.background,
             onEntryChange = { changed ->
-                updateState { it.copy(background = changed) }
+                componentState.background = changed
             }
         )
         ComponentSwitch(
@@ -151,7 +147,7 @@ fun LevelPropertyEditor(
             propertyName = "EasyUpgrade",
             checked = componentState.easyUpgrade,
             onCheckedChange = { changed ->
-                updateState { it.copy(easyUpgrade = changed) }
+                componentState.easyUpgrade = changed
             }
         )
         ComponentListField(
@@ -159,26 +155,26 @@ fun LevelPropertyEditor(
                 .fillMaxWidth()
                 .heightIn(max = 500.dp),
             propertyName = "AllowedZombies",
-            items = componentState.allowedZombies,
-            onItemChange = { changed ->
-                updateState { it.copy(allowedZombies = changed) }
-            },
+            itemListState = componentState.allowedZombies,
             initialItem = { ZombieType.Boss },
-            itemContent = { item, onItemDelete ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.background),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(item.displayName)
-                    IconButton(onClick = onItemDelete) {
-                        Icon(Icons.Default.Delete, null)
-                    }
-                }
-
-
+            itemContent = { item, onItemChange, onItemDelete ->
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(MaterialTheme.colorScheme.background),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(item.displayName)
+//                    IconButton(onClick = onItemDelete) {
+//                        Icon(Icons.Default.Delete, null)
+//                    }
+//                }
+                EnumText<ZombieType>(
+                    modifier = Modifier.fillMaxWidth(),
+                    entry = item,
+                    onEnterChange = onItemChange
+                )
             },
         )
     }

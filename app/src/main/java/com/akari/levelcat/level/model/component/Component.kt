@@ -27,13 +27,11 @@ fun Editor(
     is LevelPropertyState -> LevelPropertyEditor(
         modifier = modifier,
         componentState = componentState,
-        onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
     )
     is SeedBankState -> SeedBank(
         modifier = modifier,
         componentState = componentState,
-        onComponentStateChange = onComponentStateChange,
         onComponentDelete = onComponentDelete,
     )
     ColumnPlantingState -> ColumnPlanting(

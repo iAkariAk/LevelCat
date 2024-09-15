@@ -4,8 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.SeedType
@@ -37,12 +36,17 @@ data class SeedBank(
 }
 
 @Stable
-data class SeedBankState(
-    val numPackets: String = "",
-    val bannedCards: List<SeedType> = emptyList(),
-    val lockedCards: List<SeedType> = emptyList(),
-    val userChoose: Boolean = true
+class SeedBankState(
+    numPackets: String = "",
+    bannedCards: List<SeedType> = emptyList(),
+    lockedCards: List<SeedType> = emptyList(),
+    userChoose: Boolean = true
 ) : ComponentState<SeedBank> {
+    var numPackets by mutableStateOf(numPackets)
+    val bannedCards = bannedCards.toMutableStateList()
+    val lockedCards = lockedCards.toMutableStateList()
+    var userChoose by mutableStateOf(userChoose)
+
     override fun toComponent(): SeedBank = SeedBank(
         numPackets = numPackets.toIntOrNull(),
         bannedCards = bannedCards,
@@ -59,7 +63,6 @@ data class SeedBankState(
 @Composable
 fun SeedBank(
     componentState: SeedBankState,
-    onComponentStateChange: (SeedBankState) -> Unit,
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -71,7 +74,7 @@ fun SeedBank(
         ComponentTextField(
             propertyName = "NumPackets",
             value = componentState.numPackets,
-            onValueChange = { onComponentStateChange(componentState.copy(numPackets = it)) },
+            onValueChange = { componentState.numPackets = it },
             pattern = IntOrEmpty
         )
         ComponentListField(
@@ -80,12 +83,11 @@ fun SeedBank(
                 .heightIn(max = 500.dp)
                 .padding(top = 8.dp),
             propertyName = "BannedCards",
-            items = componentState.bannedCards,
+            itemListState = componentState.bannedCards,
             initialItem = { SeedType.Peashooter },
-            itemContent = { item, _ ->
+            itemContent = { item, _, _ ->
                 Text(item.name)
             },
-            onItemChange = { onComponentStateChange(componentState.copy(bannedCards = it)) }
         )
     }
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -16,6 +15,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -190,10 +190,9 @@ inline fun <reified E> ComponentEnumField(
 @Composable
 fun <T> ComponentListField(
     propertyName: String,
-    items: List<T>,
-    onItemChange: (List<T>) -> Unit,
+    itemListState: SnapshotStateList<T> = mutableStateListOf(),
     initialItem: () -> T,
-    itemContent: @Composable (item: T, onItemDelete: () -> Unit) -> Unit,
+    itemContent: @Composable (item: T, onItemChange: (T) -> Unit, onItemDelete: () -> Unit) -> Unit,
     itemKey: ((item: T) -> Any)? = null,
     modifier: Modifier = Modifier,
     shape: Shape = CardDefaults.outlinedShape,
@@ -217,18 +216,16 @@ fun <T> ComponentListField(
                     propertyName,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                IconButton(onClick = { onItemChange(items + initialItem()) }) {
+                IconButton(onClick = { itemListState += initialItem() }) {
                     Icon(Icons.Outlined.Add, contentDescription = "add")
                 }
             }
             HorizontalDivider()
-            val listState = rememberLazyListState()
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                state = listState,
             ) {
                 items(
-                    items = items,
+                    items = itemListState,
                     key = itemKey,
                 ) { item ->
                     Box(
@@ -236,7 +233,11 @@ fun <T> ComponentListField(
                             .animateItemPlacement()
                             .animateEnter(),
                     ) {
-                        itemContent(item, { onItemChange(items - item) })
+                        itemContent(
+                            item,
+                            { itemListState[itemListState.indexOf(item)] = it },
+                            { itemListState.remove(item) }
+                        )
                     }
                 }
             }
