@@ -7,9 +7,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import com.akari.levelcat.level.model.constant.BackgroundType
 import com.akari.levelcat.level.model.constant.ZombieType
-import com.akari.levelcat.level.ui.component.ComponentEditor
-import com.akari.levelcat.level.ui.component.EnumField
-import com.akari.levelcat.level.ui.component.EnumList
+import com.akari.levelcat.level.ui.component.*
 import com.akari.levelcat.level.util.InputPatterns
 import com.akari.levelcat.level.util.InputPatterns.EmptyOnly
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
@@ -107,7 +105,7 @@ class LevelPropertyState(
     )
 
     companion object {
-        val Empty = LevelPropertyState()
+        fun Empty() = LevelPropertyState()
     }
 }
 
@@ -132,6 +130,6 @@ fun LevelPropertyEditor(
         InputField("NumWaves", componentState.numWaves, IntOrEmpty)
         EnumField("Background", componentState.background)
         Switch("EasyUpgrade", componentState.easyUpgrade)
-        EnumList("AllowedZombies", componentState.allowedZombies)
+        EnumListField("AllowedZombies", componentState.allowedZombies)
     }
 }

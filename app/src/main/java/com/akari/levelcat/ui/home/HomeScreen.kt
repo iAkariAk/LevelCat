@@ -9,12 +9,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -51,7 +53,15 @@ fun HomeScreen(
         topBar = {
             LevelcatTopAppBar(
                 destination = NavigationDestination.Home,
-                navigateUp = navController::navigateUp
+                navigateUp = navController::navigateUp,
+                actions = {
+                    val uriHandler = LocalUriHandler.current
+                    IconButton(onClick = {
+                        uriHandler.openUri("https://github.com/iAkariAk/LevelCat")
+                    }) {
+                        Icon(Icons.Outlined.Code, contentDescription = "")
+                    }
+                }
             )
         },
         floatingActionButton = {

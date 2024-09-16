@@ -16,7 +16,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.akari.levelcat.level.model.component.*
+import com.akari.levelcat.level.model.component.ComponentEditor
+import com.akari.levelcat.level.model.component.ComponentState
+import com.akari.levelcat.level.model.component.emptyComponents
 import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.component.AlertDialogHost
 import com.akari.levelcat.ui.component.AlertDialogHostState
@@ -107,11 +109,7 @@ private fun EditorFab(
                     transform = {},
                     title = { Text("Selected a component type") },
                     text = { controller ->
-                        val components = listOf(
-                            "LevelProperty" to LevelPropertyState.Empty,
-                            "ColumnPlanting" to ColumnPlantingState,
-                            "SeedBank" to SeedBankState.Empty,
-                        ).filterNot { (_, state) ->
+                        val components = emptyComponents.filterNot { (_, state) ->
                             editorUiState.components.any { it::class == state::class }
                         }
                         LazyColumn(

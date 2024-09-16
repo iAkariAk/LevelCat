@@ -7,7 +7,9 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import com.akari.levelcat.level.model.constant.SeedType
 import com.akari.levelcat.level.ui.component.ComponentEditor
-import com.akari.levelcat.level.ui.component.EnumList
+import com.akari.levelcat.level.ui.component.EnumListField
+import com.akari.levelcat.level.ui.component.InputField
+import com.akari.levelcat.level.ui.component.Switch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -51,7 +53,7 @@ class SeedBankState(
     )
 
     companion object {
-        val Empty = SeedBankState()
+        fun Empty() = SeedBankState()
     }
 }
 
@@ -69,7 +71,7 @@ fun SeedBank(
     ) {
         InputField(name = "NumPackets", state = componentState.numPackets)
         Switch(name = "UserChoose", state = componentState.userChoose)
-        EnumList(name = "BannedCards", state = componentState.bannedCards)
-        EnumList(name = "LockedCards", state = componentState.lockedCards)
+        EnumListField(name = "BannedCards", state = componentState.bannedCards)
+        EnumListField(name = "LockedCards", state = componentState.lockedCards)
     }
 }

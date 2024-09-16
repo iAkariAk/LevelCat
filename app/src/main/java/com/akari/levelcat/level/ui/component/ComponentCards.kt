@@ -67,6 +67,35 @@ fun ComponentCard(
     colors: CardColors = CardDefaults.outlinedCardColors(),
     elevation: CardElevation = CardDefaults.outlinedCardElevation(),
     border: BorderStroke = CardDefaults.outlinedCardBorder(),
+    actions: @Composable () -> Unit = {},
+    editAreaContent: @Composable () -> Unit,
+) = ComponentCard(
+    componentName = {
+        Text(
+            text = componentName,
+            style = MaterialTheme.typography.titleMedium
+        )
+    },
+    modifier = modifier,
+    onComponentDelete = onComponentDelete,
+    shape = shape,
+    colors = colors,
+    elevation = elevation,
+    border = border,
+    actions = actions,
+    editAreaContent = editAreaContent
+)
+
+@Composable
+fun ComponentCard(
+    componentName: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    onComponentDelete: () -> Unit = {},
+    shape: Shape = CardDefaults.outlinedShape,
+    colors: CardColors = CardDefaults.outlinedCardColors(),
+    elevation: CardElevation = CardDefaults.outlinedCardElevation(),
+    border: BorderStroke = CardDefaults.outlinedCardBorder(),
+    actions: @Composable () -> Unit = {},
     editAreaContent: @Composable () -> Unit,
 ) {
     OutlinedCard(
@@ -81,12 +110,12 @@ fun ComponentCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = componentName,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                IconButton(onClick = onComponentDelete) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "delete")
+                componentName()
+                Row {
+                    actions()
+                    IconButton(onClick = onComponentDelete) {
+                        Icon(Icons.Outlined.Delete, contentDescription = "delete")
+                    }
                 }
 
             }

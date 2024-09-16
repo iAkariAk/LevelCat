@@ -17,6 +17,17 @@ sealed interface ComponentState<out T : Component> {
     fun toComponent(): T
 }
 
+val emptyComponents
+    get() = listOf(
+        "LevelProperty" to LevelPropertyState.Empty(),
+        "ColumnPlanting" to ColumnPlantingState,
+        "SeedBank" to SeedBankState.Empty(),
+        "SpawnFog" to SpawnFogState.Empty(),
+        "OverrideZombieProperty" to OverrideZombiePropertyState.Empty(),
+        "VaseLevel" to LevelPropertyState.Empty(),
+        "AutoZombiePoint" to AutoZombiePointState.Empty(),
+        "DefaultPlantOnLawnState" to DefaultPlantOnLawnState.Empty(),
+    )
 
 @Composable
 fun ComponentEditor(
@@ -29,14 +40,46 @@ fun ComponentEditor(
         componentState = componentState,
         onComponentDelete = onComponentDelete,
     )
+
     is SeedBankState -> SeedBank(
         modifier = modifier,
         componentState = componentState,
         onComponentDelete = onComponentDelete,
     )
+
     ColumnPlantingState -> ColumnPlanting(
         modifier = modifier,
         componentState = ColumnPlantingState,
         onComponentDelete = onComponentDelete,
+    )
+
+    is SpawnFogState -> SpawnFog(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentDelete = onComponentDelete,
+    )
+
+    is OverrideZombiePropertyState -> OverrideZombieProperty(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentDelete = onComponentDelete,
+    )
+
+    is VaseLevelState -> VaseLevel(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentDelete = onComponentDelete,
+    )
+
+    is AutoZombiePointState -> AutoZombiePoint(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentDelete,
+    )
+
+    is DefaultPlantOnLawnState -> DefaultPlantOnLawn(
+        modifier = modifier,
+        componentState = componentState,
+        onComponentDelete
     )
 }
