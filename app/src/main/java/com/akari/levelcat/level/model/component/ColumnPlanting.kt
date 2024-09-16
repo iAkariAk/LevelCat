@@ -3,9 +3,11 @@ package com.akari.levelcat.level.model.component
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.akari.levelcat.level.ui.component.EmptyComponentCard
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@SerialName("ColumnPlanting")
 data object ColumnPlanting : Component {
     override fun asState() = ColumnPlantingState
 }
