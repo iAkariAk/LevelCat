@@ -78,7 +78,7 @@ fun EditorScreen(
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             items(editorUiState.components) { componentState ->
-                Editor(
+                ComponentEditor(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(4.dp)

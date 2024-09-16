@@ -4,6 +4,7 @@ package com.akari.levelcat.level.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.*
@@ -24,6 +26,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.ConstantEnum
 import com.akari.levelcat.level.util.InputPattern
+import com.akari.levelcat.ui.component.EnumText
 import com.akari.levelcat.ui.component.OutlinedPatternedTextField
 import com.akari.levelcat.ui.component.animateEnter
 import kotlin.enums.enumEntries
@@ -174,7 +177,23 @@ fun ComponentSwitch(
 inline fun <reified E> ComponentEnumField(
     propertyName: String,
     entry: E,
-    crossinline onEntryChange: (E) -> Unit,
+    noinline onEntryChange: (E) -> Unit,
+    modifier: Modifier = Modifier,
+) where E : Enum<E>, E : ConstantEnum =
+    ComponentEnumField<E>(
+        propertyName = propertyName,
+        entries = enumEntries<E>(),
+        entry = entry,
+        onEntryChange = onEntryChange,
+        modifier = modifier,
+    )
+
+@Composable
+fun <E> ComponentEnumField(
+    propertyName: String,
+    entries: List<E>,
+    entry: E,
+    onEntryChange: (E) -> Unit,
     modifier: Modifier = Modifier,
 ) where E : Enum<E>, E : ConstantEnum {
     var expanded by remember { mutableStateOf(false) }
@@ -198,7 +217,7 @@ inline fun <reified E> ComponentEnumField(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            enumEntries<E>().forEach { entry ->
+            entries.forEach { entry ->
                 DropdownMenuItem(
                     text = { Text(entry.displayName) },
                     onClick = {
@@ -256,7 +275,7 @@ fun <T> ComponentListField(
                 ) { index, item ->
                     Box(
                         modifier = Modifier
-                            .animateItemPlacement()
+                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
                             .animateEnter(),
                     ) {
                         itemContent(
@@ -268,6 +287,48 @@ fun <T> ComponentListField(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+inline fun <reified E : Enum<E>> ComponentEnumListItem(
+    item: E,
+    noinline onItemChange: (E) -> Unit,
+    noinline onItemDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) = ComponentEnumListItem(
+    entries = enumEntries<E>(),
+    item = item,
+    onItemChange = onItemChange,
+    onItemDelete = onItemDelete,
+    modifier = modifier
+)
+
+@Composable
+fun <E : Enum<E>> ComponentEnumListItem(
+    entries: List<E>,
+    item: E,
+    onItemChange: (E) -> Unit,
+    onItemDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        EnumText(
+            modifier = Modifier.fillMaxWidth(),
+            entries = entries,
+            entry = item,
+            onEnterChange = onItemChange,
+        )
+
+        IconButton(onClick = onItemDelete) {
+            Icon(Icons.Default.Delete, null)
         }
     }
 }

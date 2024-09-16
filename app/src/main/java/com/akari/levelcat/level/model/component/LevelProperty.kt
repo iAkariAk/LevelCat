@@ -1,19 +1,20 @@
 package com.akari.levelcat.level.model.component
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.BackgroundType
 import com.akari.levelcat.level.model.constant.ZombieType
-import com.akari.levelcat.level.ui.component.*
+import com.akari.levelcat.level.ui.component.ComponentEditor
+import com.akari.levelcat.level.ui.component.EnumField
+import com.akari.levelcat.level.ui.component.EnumList
 import com.akari.levelcat.level.util.InputPatterns
 import com.akari.levelcat.level.util.InputPatterns.EmptyOnly
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
 import com.akari.levelcat.level.util.or
 import com.akari.levelcat.level.util.patternOf
-import com.akari.levelcat.ui.component.EnumText
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -77,32 +78,32 @@ class LevelPropertyState(
     wavesPerFlag: String = "",
 ) : ComponentState<LevelProperty> {
     val allowedZombies = allowedZombies.toMutableStateList()
-    var background by mutableStateOf(background)
-    var creator by mutableStateOf(creator)
-    var easyUpgrade by mutableStateOf(easyUpgrade)
-    var initPlantColumn by mutableStateOf(initPlantColumn)
-    var name by mutableStateOf(name)
-    var numWaves by mutableStateOf(numWaves)
-    var startingSun by mutableStateOf(startingSun)
-    var startingTime by mutableStateOf(startingTime)
-    var startingWave by mutableStateOf(startingWave)
-    var wavesPerFlag by mutableStateOf(wavesPerFlag)
+    val background = mutableStateOf(background)
+    val creator = mutableStateOf(creator)
+    val easyUpgrade = mutableStateOf(easyUpgrade)
+    val initPlantColumn = mutableStateOf(initPlantColumn)
+    val name = mutableStateOf(name)
+    val numWaves = mutableStateOf(numWaves)
+    val startingSun = mutableStateOf(startingSun)
+    val startingTime = mutableStateOf(startingTime)
+    val startingWave = mutableStateOf(startingWave)
+    val wavesPerFlag = mutableStateOf(wavesPerFlag)
 
     override fun isValidated() =
-        CreatorPattern.match(creator) && InitPlantColumnPattern.match(initPlantColumn)
+        CreatorPattern.match(creator.value) && InitPlantColumnPattern.match(initPlantColumn.value)
 
     override fun toComponent() = LevelProperty(
         allowedZombies = allowedZombies,
-        background = background,
-        name = name.takeIf(String::isNotEmpty),
-        creator = creator.takeIf(String::isNotEmpty),
-        easyUpgrade = easyUpgrade,/*.toBooleanStrictOrNull()*/
-        initPlantColumn = initPlantColumn.toIntOrNull(),
-        numWaves = numWaves.toIntOrNull(),
-        startingSun = startingSun.toIntOrNull(),
-        startingTime = startingTime.toIntOrNull(),
-        startingWave = startingWave.toIntOrNull(),
-        wavesPerFlag = wavesPerFlag.toIntOrNull(),
+        background = background.value,
+        name = name.value.takeIf(String::isNotEmpty),
+        creator = creator.value.takeIf(String::isNotEmpty),
+        easyUpgrade = easyUpgrade.value,/*.toBooleanStrictOrNull()*/
+        initPlantColumn = initPlantColumn.value.toIntOrNull(),
+        numWaves = numWaves.value.toIntOrNull(),
+        startingSun = startingSun.value.toIntOrNull(),
+        startingTime = startingTime.value.toIntOrNull(),
+        startingWave = startingWave.value.toIntOrNull(),
+        wavesPerFlag = wavesPerFlag.value.toIntOrNull(),
     )
 
     companion object {
@@ -120,65 +121,17 @@ fun LevelPropertyEditor(
     componentState: LevelPropertyState,
     onComponentDelete: () -> Unit,
 ) {
-    ComponentCard(
+    ComponentEditor(
         modifier = modifier,
-        componentName = "LevelProperty",
-        onComponentDelete = onComponentDelete
+        onComponentDelete = onComponentDelete,
+        name = "LevelProperty",
     ) {
-        listOf(
-            Triple("Name", componentState::name, null),
-            Triple("Creator", componentState::creator, CreatorPattern),
-            Triple("InitPlantColumn", componentState::initPlantColumn, InitPlantColumnPattern),
-            Triple("NumWaves", componentState::numWaves, IntOrEmpty),
-        ).forEach { (name, property, pattern) ->
-            ComponentTextField(
-                propertyName = name,
-                pattern = pattern,
-                value = property.get(),
-                onValueChange = property::set,
-            )
-        }
-        ComponentEnumField<BackgroundType>(
-            propertyName = "Background",
-            entry = componentState.background,
-            onEntryChange = { changed ->
-                componentState.background = changed
-            }
-        )
-        ComponentSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            propertyName = "EasyUpgrade",
-            checked = componentState.easyUpgrade,
-            onCheckedChange = { changed ->
-                componentState.easyUpgrade = changed
-            }
-        )
-        ComponentListField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 500.dp),
-            propertyName = "AllowedZombies",
-            itemListState = componentState.allowedZombies,
-            initialItem = { ZombieType.Boss },
-            itemContent = { index, item, onItemChange, onItemDelete ->
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .background(MaterialTheme.colorScheme.background),
-//                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Text(item.displayName)
-//                    IconButton(onClick = onItemDelete) {
-//                        Icon(Icons.Default.Delete, null)
-//                    }
-//                }
-                EnumText<ZombieType>(
-                    modifier = Modifier.fillMaxWidth(),
-                    entry = item,
-                    onEnterChange = { onItemChange(index, it) }
-                )
-            },
-        )
+        InputField("Name", componentState.name, null)
+        InputField("Creator", componentState.creator, CreatorPattern)
+        InputField("InitPlantColumn", componentState.initPlantColumn, InitPlantColumnPattern)
+        InputField("NumWaves", componentState.numWaves, IntOrEmpty)
+        EnumField("Background", componentState.background)
+        Switch("EasyUpgrade", componentState.easyUpgrade)
+        EnumList("AllowedZombies", componentState.allowedZombies)
     }
 }

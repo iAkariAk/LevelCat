@@ -19,7 +19,7 @@ sealed interface ComponentState<out T : Component> {
 
 
 @Composable
-fun Editor(
+fun ComponentEditor(
     componentState: ComponentState<*>,
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier,

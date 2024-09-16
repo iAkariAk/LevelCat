@@ -18,17 +18,31 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import kotlin.enums.enumEntries
 
+
 @Composable
 inline fun <reified E : Enum<E>> ExposedDropdownMenuBoxScope.EnumExposedDropdownMenu(
     expanded: Boolean,
-    crossinline onExpandedChange: (Boolean) -> Unit,
-    crossinline onEntryChange: (E) -> Unit,
+    noinline onExpandedChange: (Boolean) -> Unit,
+    noinline onEntryChange: (E) -> Unit,
+) = EnumExposedDropdownMenu(
+    entries = enumEntries<E>(),
+    expanded = expanded,
+    onExpandedChange = onExpandedChange,
+    onEntryChange = onEntryChange,
+)
+
+@Composable
+fun <E : Enum<E>> ExposedDropdownMenuBoxScope.EnumExposedDropdownMenu(
+    entries: List<E>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onEntryChange: (E) -> Unit,
 ) {
     ExposedDropdownMenu(
         expanded = expanded,
         onDismissRequest = { onExpandedChange(false) },
     ) {
-        enumEntries<E>().forEach { entry ->
+        entries.forEach { entry ->
             DropdownMenuItem(
                 onClick = {
                     onEntryChange(entry)
@@ -44,9 +58,24 @@ inline fun <reified E : Enum<E>> ExposedDropdownMenuBoxScope.EnumExposedDropdown
 @Composable
 inline fun <reified E : Enum<E>> OutlinedEnumTextField(
     entry: E,
-    crossinline onEnterChange: (E) -> Unit,
+    noinline onEnterChange: (E) -> Unit,
     modifier: Modifier = Modifier,
-    crossinline entryName: (E) -> String = { it.name }
+    noinline entryName: (E) -> String = { it.name }
+) = OutlinedEnumTextField(
+    entries = enumEntries<E>(),
+    entry = entry,
+    onEnterChange = onEnterChange,
+    modifier = modifier,
+    entryName = entryName
+)
+
+@Composable
+fun <E : Enum<E>> OutlinedEnumTextField(
+    entries: List<E>,
+    entry: E,
+    onEnterChange: (E) -> Unit,
+    modifier: Modifier = Modifier,
+    entryName: (E) -> String = { it.name }
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -56,7 +85,7 @@ inline fun <reified E : Enum<E>> OutlinedEnumTextField(
         onExpandedChange = { expanded = it },
     ) {
         OutlinedTextField(
-            modifier = Modifier.menuAnchor(),
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
             value = entryName(entry),
             onValueChange = {},
             readOnly = true,
@@ -65,6 +94,7 @@ inline fun <reified E : Enum<E>> OutlinedEnumTextField(
         )
 
         EnumExposedDropdownMenu<E>(
+            entries = entries,
             expanded = expanded,
             onExpandedChange = { expanded = it },
             onEntryChange = onEnterChange
@@ -75,9 +105,48 @@ inline fun <reified E : Enum<E>> OutlinedEnumTextField(
 @Composable
 inline fun <reified E : Enum<E>> EnumText(
     entry: E,
-    crossinline onEnterChange: (E) -> Unit,
+    noinline onEnterChange: (E) -> Unit,
     modifier: Modifier = Modifier,
-    crossinline entryName: (E) -> String = { it.name },
+    noinline entryName: (E) -> String = { it.name },
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    style: TextStyle = LocalTextStyle.current
+) = EnumText(
+    entries = enumEntries<E>(),
+    entry = entry,
+    onEnterChange = onEnterChange,
+    modifier = modifier,
+    entryName = entryName,
+    color = color,
+    fontSize = fontSize,
+    fontStyle = fontStyle,
+    fontWeight = fontWeight,
+    fontFamily = fontFamily,
+    letterSpacing = letterSpacing,
+    textDecoration = textDecoration,
+    textAlign = textAlign,
+    lineHeight = lineHeight,
+    overflow = overflow,
+    softWrap = softWrap,
+    style = style
+)
+
+@Composable
+fun <E : Enum<E>> EnumText(
+    entries: List<E>,
+    entry: E,
+    onEnterChange: (E) -> Unit,
+    modifier: Modifier = Modifier,
+    entryName: (E) -> String = { it.name },
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
@@ -101,7 +170,7 @@ inline fun <reified E : Enum<E>> EnumText(
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .clickable { expanded = true },
             text = entryName(entry),
             color = color,
@@ -118,7 +187,8 @@ inline fun <reified E : Enum<E>> EnumText(
             style = style,
         )
 
-        EnumExposedDropdownMenu<E>(
+        EnumExposedDropdownMenu(
+            entries = entries,
             expanded = expanded,
             onExpandedChange = { expanded = it },
             onEntryChange = onEnterChange

@@ -1,17 +1,13 @@
 package com.akari.levelcat.level.model.component
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.SeedType
-import com.akari.levelcat.level.ui.component.ComponentCard
-import com.akari.levelcat.level.ui.component.ComponentListField
-import com.akari.levelcat.level.ui.component.ComponentTextField
-import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
+import com.akari.levelcat.level.ui.component.ComponentEditor
+import com.akari.levelcat.level.ui.component.EnumList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -42,16 +38,16 @@ class SeedBankState(
     lockedCards: List<SeedType> = emptyList(),
     userChoose: Boolean = true
 ) : ComponentState<SeedBank> {
-    var numPackets by mutableStateOf(numPackets)
+    val numPackets = mutableStateOf(numPackets)
     val bannedCards = bannedCards.toMutableStateList()
     val lockedCards = lockedCards.toMutableStateList()
-    var userChoose by mutableStateOf(userChoose)
+    val userChoose = mutableStateOf(userChoose)
 
     override fun toComponent(): SeedBank = SeedBank(
-        numPackets = numPackets.toIntOrNull(),
+        numPackets = numPackets.value.toIntOrNull(),
         bannedCards = bannedCards,
         lockedCards = lockedCards,
-        userChoose = userChoose
+        userChoose = userChoose.value
     )
 
     companion object {
@@ -66,28 +62,14 @@ fun SeedBank(
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ComponentCard(
+    ComponentEditor(
         modifier = modifier,
-        componentName = "SeedBank",
         onComponentDelete = onComponentDelete,
+        name = "SeedBank"
     ) {
-        ComponentTextField(
-            propertyName = "NumPackets",
-            value = componentState.numPackets,
-            onValueChange = { componentState.numPackets = it },
-            pattern = IntOrEmpty
-        )
-        ComponentListField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 500.dp)
-                .padding(top = 8.dp),
-            propertyName = "BannedCards",
-            itemListState = componentState.bannedCards,
-            initialItem = { SeedType.Peashooter },
-            itemContent = { index, item, _, _ ->
-                Text(item.name)
-            },
-        )
+        InputField(name = "NumPackets", state = componentState.numPackets)
+        Switch(name = "UserChoose", state = componentState.userChoose)
+        EnumList(name = "BannedCards", state = componentState.bannedCards)
+        EnumList(name = "LockedCards", state = componentState.lockedCards)
     }
 }
