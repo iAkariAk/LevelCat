@@ -24,7 +24,7 @@ val emptyComponents
         "SeedBank" to SeedBankState.Empty(),
         "SpawnFog" to SpawnFogState.Empty(),
         "OverrideZombieProperty" to OverrideZombiePropertyState.Empty(),
-        "VaseLevel" to LevelPropertyState.Empty(),
+        "VaseLevel" to VaseLevelState.Empty(),
         "AutoZombiePoint" to AutoZombiePointState.Empty(),
         "DefaultPlantOnLawnState" to DefaultPlantOnLawnState.Empty(),
     )

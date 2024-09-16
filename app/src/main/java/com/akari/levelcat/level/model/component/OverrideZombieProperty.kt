@@ -30,6 +30,7 @@ import kotlinx.serialization.Serializable
 
 @Stable
 @Serializable
+@SerialName("OverrideZombieProperty")
 data class OverrideZombieProperty(
     @SerialName("Properties")
     val properties: Map<ZombieType, Override>? = null,

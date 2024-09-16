@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 
 @Stable
 @Serializable
+@SerialName("SeedBank")
 data class SeedBank(
     @SerialName("NumPackets")
     val numPackets: Int? = null,

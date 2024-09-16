@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 
 @Stable
 @Serializable
+@SerialName("SpawnFog")
 data class SpawnFog(
     @SerialName("Column")
     val column: Int? = null,
