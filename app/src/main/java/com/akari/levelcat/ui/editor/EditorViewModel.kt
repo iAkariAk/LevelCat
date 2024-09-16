@@ -6,7 +6,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.akari.levelcat.data.model.Project
 import com.akari.levelcat.data.repository.ProjectRepository
@@ -15,6 +14,7 @@ import com.akari.levelcat.level.model.component.ComponentState
 import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.model.component.LevelPropertyState
 import com.akari.levelcat.ui.navigation.ARG_EDITOR_ID
+import com.akari.levelcat.ui.util.BasicViewModel
 import com.akari.levelcat.util.logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
 class EditorViewModel @Inject constructor(
     val projectRepository: ProjectRepository,
     savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+) : BasicViewModel() {
     private val projectId: Long = savedStateHandle[ARG_EDITOR_ID]!!
     private val project = projectRepository.getProject(projectId)
         .stateIn(
@@ -101,10 +101,17 @@ class EditorViewModel @Inject constructor(
     }
 
     fun save() = viewModelScope.launch {
-        logger.debug("${project.value}")
-        val project = editorUiState.value.toProject()
-        projectRepository.updateProject(project)
-        logger.debug("Save: $project")
+        val editorUiState = editorUiState.value
+        if (editorUiState.isSavable()) {
+            val project = editorUiState.toProject()
+            projectRepository.updateProject(project)
+            logger.debug("Saved: $project")
+        } else {
+            showSnackbar(
+                "Cannot save because the project has errors",
+                withDismissAction = true
+            )
+        }
     }
 }
 
@@ -116,6 +123,8 @@ data class EditorUiState(
     val projectSdkVersion: Int,
     val components: List<ComponentState<*>>,
 ) {
+    fun isSavable() = components.all(ComponentState<*>::isValidated)
+
     companion object {
         val Empty = EditorUiState(
             projectId = 0,
@@ -144,3 +153,7 @@ fun EditorUiState.toProject(): Project {
 }
 
 
+fun main() {
+    while (true)
+        println("Hello world")
+}

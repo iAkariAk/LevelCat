@@ -13,6 +13,7 @@ sealed interface Component {
 
 @Stable
 sealed interface ComponentState<out T : Component> {
+    fun isValidated(): Boolean = true
     fun toComponent(): T
 }
 
@@ -20,7 +21,6 @@ sealed interface ComponentState<out T : Component> {
 @Composable
 fun Editor(
     componentState: ComponentState<*>,
-    onComponentStateChange: (ComponentState<*>) -> Unit,
     onComponentDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) = when (componentState) {

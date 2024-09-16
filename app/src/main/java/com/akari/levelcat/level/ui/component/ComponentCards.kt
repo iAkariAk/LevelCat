@@ -7,7 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,6 +28,32 @@ import com.akari.levelcat.ui.component.OutlinedPatternedTextField
 import com.akari.levelcat.ui.component.animateEnter
 import kotlin.enums.enumEntries
 
+@Composable
+fun EmptyComponentCard(
+    componentName: String,
+    modifier: Modifier = Modifier,
+    onComponentDelete: () -> Unit = {},
+    shape: Shape = CardDefaults.outlinedShape,
+    colors: CardColors = CardDefaults.outlinedCardColors(),
+    elevation: CardElevation = CardDefaults.outlinedCardElevation(),
+    border: BorderStroke = CardDefaults.outlinedCardBorder(),
+) {
+    ComponentCard(
+        componentName = componentName,
+        modifier = modifier,
+        onComponentDelete = onComponentDelete,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        border = border
+    ) {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+        )
+    }
+}
 
 @Composable
 fun ComponentCard(
@@ -192,8 +218,8 @@ fun <T> ComponentListField(
     propertyName: String,
     itemListState: SnapshotStateList<T> = mutableStateListOf(),
     initialItem: () -> T,
-    itemContent: @Composable (item: T, onItemChange: (T) -> Unit, onItemDelete: () -> Unit) -> Unit,
-    itemKey: ((item: T) -> Any)? = null,
+    itemContent: @Composable (index: Int, item: T, onItemChange: (index: Int, value: T) -> Unit, onItemDelete: () -> Unit) -> Unit,
+    itemKey: ((index: Int, item: T) -> Any)? = { index, _ -> index },
     modifier: Modifier = Modifier,
     shape: Shape = CardDefaults.outlinedShape,
     colors: CardColors = CardDefaults.outlinedCardColors(),
@@ -224,18 +250,19 @@ fun <T> ComponentListField(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                items(
+                itemsIndexed(
                     items = itemListState,
                     key = itemKey,
-                ) { item ->
+                ) { index, item ->
                     Box(
                         modifier = Modifier
                             .animateItemPlacement()
                             .animateEnter(),
                     ) {
                         itemContent(
+                            index,
                             item,
-                            { itemListState[itemListState.indexOf(item)] = it },
+                            { index, value -> itemListState[index] = value },
                             { itemListState.remove(item) }
                         )
                     }

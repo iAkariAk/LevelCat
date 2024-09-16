@@ -88,6 +88,9 @@ class LevelPropertyState(
     var startingWave by mutableStateOf(startingWave)
     var wavesPerFlag by mutableStateOf(wavesPerFlag)
 
+    override fun isValidated() =
+        CreatorPattern.match(creator) && InitPlantColumnPattern.match(initPlantColumn)
+
     override fun toComponent() = LevelProperty(
         allowedZombies = allowedZombies,
         background = background,
@@ -157,7 +160,7 @@ fun LevelPropertyEditor(
             propertyName = "AllowedZombies",
             itemListState = componentState.allowedZombies,
             initialItem = { ZombieType.Boss },
-            itemContent = { item, onItemChange, onItemDelete ->
+            itemContent = { index, item, onItemChange, onItemDelete ->
 //                Row(
 //                    modifier = Modifier
 //                        .fillMaxWidth()
@@ -173,7 +176,7 @@ fun LevelPropertyEditor(
                 EnumText<ZombieType>(
                     modifier = Modifier.fillMaxWidth(),
                     entry = item,
-                    onEnterChange = onItemChange
+                    onEnterChange = { onItemChange(index, it) }
                 )
             },
         )

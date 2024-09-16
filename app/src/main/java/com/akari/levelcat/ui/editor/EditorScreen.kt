@@ -23,7 +23,7 @@ import com.akari.levelcat.ui.component.AlertDialogHostState
 import com.akari.levelcat.ui.component.animateEnter
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
-import com.akari.levelcat.util.logger
+import com.akari.levelcat.ui.util.UiEventHandler
 import kotlinx.coroutines.launch
 
 @Composable
@@ -36,6 +36,10 @@ fun EditorScreen(
     val intentDialogHostState = remember { AlertDialogHostState<EditorIntent>() }
     val snackbarHostState = remember { SnackbarHostState() }
     val editorUiState by viewModel.editorUiState.collectAsState()
+    UiEventHandler(
+        viewModel = viewModel,
+        snackbarHostState = snackbarHostState
+    )
     AlertDialogHost(intentDialogHostState)
     Scaffold(
         modifier = modifier,
@@ -46,7 +50,7 @@ fun EditorScreen(
                 navigateUp = {
                     coroutineScope.launch {
                         val result = snackbarHostState.showSnackbar(
-                            message = "Are you to exit without save ?",
+                            message = "Are you sure you want to exit without saving?",
                             duration = SnackbarDuration.Indefinite,
                             withDismissAction = true
                         )
@@ -80,10 +84,6 @@ fun EditorScreen(
                         .padding(4.dp)
                         .animateEnter(),
                     componentState = componentState,
-                    onComponentStateChange = {
-                        logger.info("onComponentChange: $it")
-                        viewModel.updateComponent(it)
-                    },
                     onComponentDelete = { viewModel.removeComponent(componentState) }
                 )
             }

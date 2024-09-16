@@ -85,7 +85,7 @@ fun SeedBank(
             propertyName = "BannedCards",
             itemListState = componentState.bannedCards,
             initialItem = { SeedType.Peashooter },
-            itemContent = { item, _, _ ->
+            itemContent = { index, item, _, _ ->
                 Text(item.name)
             },
         )
