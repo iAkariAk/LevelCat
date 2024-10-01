@@ -23,7 +23,7 @@ val emptyComponents
         "ColumnPlanting" to ColumnPlantingState,
         "SeedBank" to SeedBankState.Empty(),
         "SpawnFog" to SpawnFogState.Empty(),
-        "OverrideZombieProperty" to OverrideZombiePropertyState.Empty(),
+        "OverrideZombieProperties" to OverrideZombiePropertiesState.Empty(),
         "VaseLevel" to VaseLevelState.Empty(),
         "AutoZombiePoint" to AutoZombiePointState.Empty(),
         "DefaultPlantOnLawnState" to DefaultPlantOnLawnState.Empty(),
@@ -59,7 +59,7 @@ fun ComponentEditor(
         onComponentDelete = onComponentDelete,
     )
 
-    is OverrideZombiePropertyState -> OverrideZombieProperty(
+    is OverrideZombiePropertiesState -> OverrideZombieProperty(
         modifier = modifier,
         componentState = componentState,
         onComponentDelete = onComponentDelete,

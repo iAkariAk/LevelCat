@@ -12,6 +12,7 @@ class ProjectRepository(private val projectDao: ProjectDao) {
     suspend fun insertProject(project: Project) = projectDao.insertProject(project.toEntityModel())
     suspend fun deleteProject(project: Project) = projectDao.deleteProject(project.toEntityModel())
     suspend fun updateProject(project: Project) = projectDao.updateProject(project.toEntityModel())
+    suspend fun deleteAllProjects() = projectDao.deleteAllProjects()
     fun getProject(id: Long) = projectDao.getProject(id).map(ProjectEntity::toExternalModel)
     fun getAllProjects(): Flow<List<Project>> =
         projectDao.getAllProjects().map { it.map(ProjectEntity::toExternalModel) }

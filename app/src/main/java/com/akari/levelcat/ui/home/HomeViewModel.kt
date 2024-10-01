@@ -2,7 +2,6 @@ package com.akari.levelcat.ui.home
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.akari.levelcat.BuildConfig
 import com.akari.levelcat.data.model.Project
@@ -10,8 +9,10 @@ import com.akari.levelcat.data.repository.ProjectRepository
 import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.util.Json
+import com.akari.levelcat.ui.util.BasicViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -22,9 +23,14 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     val projectRepository: ProjectRepository,
     val clipboardManager: ClipboardManager,
-) : ViewModel() {
+) : BasicViewModel() {
 
     val homeUiState = projectRepository.getAllProjects()
+        .catch {
+            projectRepository.deleteAllProjects()
+            showSnackbar("Cannot get projects because ${it.message}")
+            emit(emptyList())
+        }
         .map { HomeUiState(it) }
         .stateIn(
             scope = viewModelScope,
@@ -36,7 +42,7 @@ class HomeViewModel @Inject constructor(
         projectRepository.insertProject(project)
     }
 
-    fun importProjectFromClipboard()  = viewModelScope.launch {
+    fun importProjectFromClipboard() = viewModelScope.launch {
         clipboardManager.primaryClip?.let { data ->
             val importedJson = data.getItemAt(0).text.toString()
             val level = Json.decodeFromString<Level>(importedJson)

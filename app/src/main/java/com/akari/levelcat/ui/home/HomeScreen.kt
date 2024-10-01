@@ -30,6 +30,7 @@ import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.component.*
 import com.akari.levelcat.ui.navigation.LocalNavController
 import com.akari.levelcat.ui.navigation.NavigationDestination
+import com.akari.levelcat.ui.util.UiEventHandler
 import com.akari.levelcat.ui.util.formatMillisecondAsI18nString
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
@@ -45,8 +46,9 @@ fun HomeScreen(
     val navController = LocalNavController.current
     val homeUiState by viewModel.homeUiState.collectAsState()
     val intentDialogHostState = remember { HomeIntentDialogHostState() }
-
+    val snackbarHostState = remember { SnackbarHostState() }
     AlertDialogHost(intentDialogHostState)
+    UiEventHandler(viewModel = viewModel, snackbarHostState = snackbarHostState)
 
     Scaffold(
         modifier = modifier,
@@ -64,6 +66,7 @@ fun HomeScreen(
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             CreateProjectFab(
                 intentDialogHostState = intentDialogHostState,

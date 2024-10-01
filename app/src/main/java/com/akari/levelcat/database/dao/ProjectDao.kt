@@ -15,6 +15,9 @@ interface ProjectDao {
     @Delete
     suspend fun deleteProject(project: ProjectEntity)
 
+    @Query("DELETE FROM project_entity")
+    suspend fun deleteAllProjects()
+
     @Query("SELECT * FROM project_entity ORDER BY lastModifyTime ASC")
     fun getAllProjects(): Flow<List<ProjectEntity>>
 
