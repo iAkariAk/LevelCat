@@ -1,7 +1,11 @@
 package com.akari.levelcat.level.model
 
 import com.akari.levelcat.level.model.component.LevelProperty
+import com.akari.levelcat.level.model.component.PlantVaseCount
+import com.akari.levelcat.level.model.component.VaseLevel
+import com.akari.levelcat.level.model.component.ZombieVaseCount
 import com.akari.levelcat.level.model.constant.BackgroundType
+import com.akari.levelcat.level.model.constant.SeedType
 import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.util.Json
 import kotlinx.serialization.encodeToString
@@ -74,7 +78,7 @@ class ModelTest {
                 LevelProperty(
                     name = "Play Now",
                     creator = "Wind",
-                    background = BackgroundType.Day,
+                    background = BackgroundType.Night,
                     initPlantColumn = 0,
                     easyUpgrade = false,
                     numWaves = 30,
@@ -88,5 +92,116 @@ class ModelTest {
         )
         val decodedJson = Json.decodeFromString<Level>(json)
         assertEquals(decodedJson, model)
+    }
+
+    @Test
+    fun serializeVaseLevel() {
+        val model = Level(
+            version = 1,
+            components = listOf(
+                LevelProperty(
+                    name = "Play Now",
+                    creator = "Wind",
+                    background = BackgroundType.Day,
+                    initPlantColumn = 0,
+                    easyUpgrade = false,
+                    numWaves = 30,
+                    wavesPerFlag = 10,
+                    startingSun = 50,
+                    startingWave = 9,
+                    startingTime = 2400,
+                    allowedZombies = listOf(0, 2, 4, 6, 5, 8, 17, 18, 23).mapNotNull(ZombieType.Companion::ofId),
+                ),
+                VaseLevel(
+                    minColumn = 3,
+                    maxColumn = 4,
+                    plantVases = listOf(
+                        PlantVaseCount(
+                            type = SeedType.Peashooter,
+                            count = 233
+                        ),
+                        PlantVaseCount(
+                            type = SeedType.Sunshroom,
+                            count = 2333
+                        ),
+                    ),
+                    zombieVases = listOf(
+                        ZombieVaseCount(
+                            type = ZombieType.Normal,
+                            count = 233
+                        ),
+                        ZombieVaseCount(
+                            type = ZombieType.Boss,
+                            count = 233
+                        ),
+                    ),
+                    numPlantVases = 5,
+                    numZombieVases = 5
+                )
+            ),
+        )
+        val encodedModel = Json.encodeToString(model)
+        val json = """
+            {
+                "Version": 1,
+                "Components": [
+                    {
+                        "Type": "LevelProperty",
+                        "AllowedZombies": [
+                            0,
+                            2,
+                            4,
+                            6,
+                            5,
+                            8,
+                            17,
+                            18,
+                            23
+                        ],
+                        "Background": 0,
+                        "Creator": "Wind",
+                        "EasyUpgrade": false,
+                        "InitPlantColumn": 0,
+                        "Name": "Play Now",
+                        "NumWaves": 30,
+                        "StartingSun": 50,
+                        "StartingTime": 2400,
+                        "StartingWave": 9,
+                        "WavesPerFlag": 10
+                    },
+                    {
+                        "Type": "VaseLevel",
+                        "MinColumn": 3,
+                        "MaxColumn": 4,
+                        "PlantVases": [
+                            [
+                                0,
+                                233
+                            ],
+                            [
+                                9,
+                                2333
+                            ]
+                        ],
+                        "ZombieVases": [
+                            [
+                                0,
+                                233
+                            ],
+                            [
+                                25,
+                                233
+                            ]
+                        ],
+                        "NumPlantVases": 5,
+                        "NumZombieVases": 5
+                    }
+                ]
+            }
+        """.trimIndent()
+        assertEquals(json, encodedModel)
+
+        val decodedJson = Json.decodeFromString<Level>(json)
+        assertEquals(model, decodedJson)
     }
 }

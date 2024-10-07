@@ -3,7 +3,6 @@
 package com.akari.levelcat.ui.component
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -169,7 +168,6 @@ fun <E : Enum<E>> EnumText(
     ) {
         Text(
             modifier = Modifier
-                .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .clickable { expanded = true },
             text = entryName(entry),

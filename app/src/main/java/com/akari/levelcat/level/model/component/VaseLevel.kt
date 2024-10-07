@@ -3,25 +3,27 @@
 package com.akari.levelcat.level.model.component
 
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.akari.levelcat.level.model.constant.ConstantEnum
 import com.akari.levelcat.level.model.constant.SeedType
 import com.akari.levelcat.level.model.constant.ZombieType
 import com.akari.levelcat.level.ui.component.ComponentEditor
+import com.akari.levelcat.level.ui.component.ComponentScope
 import com.akari.levelcat.level.ui.component.InputField
 import com.akari.levelcat.level.ui.component.ListField
 import com.akari.levelcat.level.util.InputPatterns
 import com.akari.levelcat.level.util.InputPatterns.IntOrEmpty
 import com.akari.levelcat.level.util.or
-import com.akari.levelcat.ui.component.OutlinedEnumTextField
+import com.akari.levelcat.ui.component.EnumText
 import com.akari.levelcat.ui.component.OutlinedPatternedTextField
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.IntArraySerializer
@@ -37,11 +39,33 @@ import kotlin.enums.EnumEntries
 
 typealias ZombieVaseCount = @Serializable(ZombieVaseCountSerializer::class) VaseCount<ZombieType>
 typealias PlantVaseCount = @Serializable(PlantVaseCountSerializer::class) VaseCount<SeedType>
+typealias ZombieVaseCountState = @Serializable(ZombieVaseCountSerializer::class) VaseCountState<ZombieType>
+typealias PlantVaseCountState = @Serializable(PlantVaseCountSerializer::class) VaseCountState<SeedType>
 
+@Stable
+@Serializable
 data class VaseCount<T>(
     val type: T,
-    val count: Int,
-) where T : Enum<T>, T : ConstantEnum
+    val count: Int?,
+) where T : Enum<T>, T : ConstantEnum {
+    fun asState() = VaseCountState(
+        type = type,
+        count = count?.toString() ?: ""
+    )
+}
+
+class VaseCountState<T>(
+    type: T,
+    count: String
+) where T : Enum<T>, T : ConstantEnum {
+    val type = mutableStateOf(type)
+    val count = mutableStateOf(count)
+
+    fun toModel() = VaseCount(
+        type = type.value,
+        count = count.value.toIntOrNull()
+    )
+}
 
 private object ZombieVaseCountSerializer : VaseCountSerializer<ZombieType>(ZombieType.entries)
 private object PlantVaseCountSerializer : VaseCountSerializer<SeedType>(SeedType.entries)
@@ -54,9 +78,16 @@ private sealed class VaseCountSerializer<T>(
 
     override fun deserialize(decoder: Decoder): VaseCount<T> {
         return decoder.decodeStructure(arraySerializer.descriptor) {
-            val typeId = decodeIntElement(descriptor, 0)
+            var typeId: Int = -1
+            var count: Int = -1
+            while (true) {
+                when (val index = decodeElementIndex(descriptor)) {
+                    0 -> typeId = decodeIntElement(descriptor, index)
+                    1 -> count = decodeIntElement(descriptor, index)
+                    else -> break
+                }
+            }
             val type = typeEntries.find { it.id == typeId }!!
-            val count = decodeIntElement(descriptor, 1)
             VaseCount(type, count)
         }
     }
@@ -64,7 +95,7 @@ private sealed class VaseCountSerializer<T>(
     override fun serialize(encoder: Encoder, value: VaseCount<T>) {
         encoder.encodeStructure(arraySerializer.descriptor) {
             encodeIntElement(descriptor, 0, value.type.id)
-            encodeIntElement(descriptor, 1, value.count)
+            encodeIntElement(descriptor, 1, value.count ?: -1)
         }
     }
 }
@@ -88,8 +119,8 @@ data class VaseLevel(
     override fun asState() = VaseLevelState(
         minColumn = minColumn?.toString() ?: "",
         maxColumn = maxColumn?.toString() ?: "",
-        plantVases = plantVases ?: emptyList(),
-        zombieVases = zombieVases ?: emptyList(),
+        plantVases = plantVases?.map(PlantVaseCount::asState) ?: emptyList(),
+        zombieVases = zombieVases?.map(ZombieVaseCount::asState) ?: emptyList(),
         numPlantVases = numPlantVases?.toString() ?: "",
         numZombieVases = numZombieVases?.toString() ?: ""
     )
@@ -103,8 +134,8 @@ data class VaseLevel(
 class VaseLevelState(
     minColumn: String = "",
     maxColumn: String = "",
-    plantVases: List<PlantVaseCount> = emptyList(),
-    zombieVases: List<ZombieVaseCount> = emptyList(),
+    plantVases: List<PlantVaseCountState> = emptyList(),
+    zombieVases: List<ZombieVaseCountState> = emptyList(),
     numPlantVases: String = "",
     numZombieVases: String = "",
 ) : ComponentState<VaseLevel> {
@@ -121,8 +152,8 @@ class VaseLevelState(
     override fun toComponent() = VaseLevel(
         minColumn = minColumn.value.toIntOrNull(),
         maxColumn = maxColumn.value.toIntOrNull(),
-        plantVases = plantVases.toList(),
-        zombieVases = zombieVases.toList(),
+        plantVases = plantVases.map(PlantVaseCountState::toModel),
+        zombieVases = zombieVases.map(ZombieVaseCountState::toModel),
         numPlantVases = numPlantVases.value.toIntOrNull(),
         numZombieVases = numZombieVases.value.toIntOrNull(),
     )
@@ -134,6 +165,58 @@ class VaseLevelState(
 
 private val MinColumnPattern = InputPatterns.IntRange(0..9) or InputPatterns.EmptyOnly
 private val MaxColumnPattern = InputPatterns.IntRange(0..9) or InputPatterns.EmptyOnly
+
+
+@Composable
+private inline fun <reified E> ComponentScope.VaseCountProperty(
+    name: String,
+    listState: SnapshotStateList<VaseCountState<E>>,
+    noinline initialItem: () -> VaseCountState<E>
+) where E : Enum<E>, E : ConstantEnum = VaseCountProperty(
+    name = name,
+    entriesOfE = kotlin.enums.enumEntries<E>(),
+    listState = listState,
+    initialItem = initialItem
+)
+
+@Composable
+private fun <E> ComponentScope.VaseCountProperty(
+    name: String,
+    entriesOfE: List<E>,
+    listState: SnapshotStateList<VaseCountState<E>>,
+    initialItem: () -> VaseCountState<E>
+) where E : Enum<E>, E : ConstantEnum {
+    ListField(
+        name = name,
+        initialItem = initialItem,
+        state = listState
+    ) { index, item, onItemChange, onItemDelete ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            OutlinedPatternedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                prefix = {
+                    EnumText(
+                        entry = item.type.value,
+                        entries = entriesOfE,
+                        onEnterChange = { item.type.value = it },
+                    )
+                    Spacer(Modifier.width(32.dp))
+                },
+                label = { Text("Count") },
+                value = item.count.value,
+                onValueChange = {
+                    item.count.value = it
+                },
+                pattern = IntOrEmpty
+            )
+        }
+    }
+
+}
 
 @Composable
 fun VaseLevel(
@@ -150,35 +233,17 @@ fun VaseLevel(
         InputField("MaxColumn", componentState.maxColumn, MaxColumnPattern)
         InputField("NumPlantVases", componentState.numPlantVases, IntOrEmpty)
         InputField("NumZombieVases", componentState.numZombieVases, IntOrEmpty)
-        mapOf(
-            "PlantVases" to componentState.plantVases,
-            "ZombieVases" to componentState.zombieVases,
-        ).forEach { (name, state) ->
-            ListField<PlantVaseCount>(
-                name = "PlantVases",
-                initialItem = { PlantVaseCount(SeedType.Peashooter, 0) },
-                state = componentState.plantVases
-            ) { index, item, onItemChange, onItemDelete ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    OutlinedEnumTextField<SeedType>(
-                        modifier = Modifier.weight(0.4f),
-                        entry = item.type,
-                        onEnterChange = { onItemChange(index, item.copy(type = it)) },
-                    )
-                    OutlinedPatternedTextField(
-                        modifier = Modifier.weight(0.6f),
-                        value = item.count.toString(),
-                        onValueChange = {
-                            it.toIntOrNull()?.let {
-                                onItemChange(index, item.copy(count = it))
-                            }
-                        }
-                    )
-                }
-            }
-        }
+
+
+        VaseCountProperty(
+            name = "PlantVases",
+            listState = componentState.plantVases,
+            initialItem = { PlantVaseCountState(SeedType.Peashooter, "0") },
+        )
+        VaseCountProperty(
+            name = "ZombieVases",
+            listState = componentState.zombieVases,
+            initialItem = { ZombieVaseCountState(ZombieType.Normal, "0") },
+        )
     }
 }

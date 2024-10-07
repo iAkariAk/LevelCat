@@ -10,6 +10,7 @@ import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.util.Json
 import com.akari.levelcat.ui.util.BasicViewModel
+import com.akari.levelcat.util.logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -28,6 +29,7 @@ class HomeViewModel @Inject constructor(
     val homeUiState = projectRepository.getAllProjects()
         .catch {
             projectRepository.deleteAllProjects()
+            logger.error(it.message ?: "", it)
             showSnackbar("Cannot get projects because ${it.message}")
             emit(emptyList())
         }
