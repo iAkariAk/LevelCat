@@ -54,6 +54,7 @@ data class VaseCount<T>(
     )
 }
 
+@Stable
 class VaseCountState<T>(
     type: T,
     count: String

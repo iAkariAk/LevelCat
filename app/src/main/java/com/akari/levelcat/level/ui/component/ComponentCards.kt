@@ -234,7 +234,7 @@ fun <E> ComponentEnumField(
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                . menuAnchor(MenuAnchorType.PrimaryNotEditable),
             value = entry.displayName,
             onValueChange = {},
             label = { Text(propertyName) },
