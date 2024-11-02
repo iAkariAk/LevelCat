@@ -1,6 +1,6 @@
 package com.akari.levelcat.level.model.constant
 
-import com.akari.levelcat.level.util.Json
+import com.akari.levelcat.level.LevelJson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import org.junit.Test
@@ -21,13 +21,13 @@ class EnumTest {
 
     @Test
     fun serializeEnum() {
-        val jsonFromModel = Json.encodeToString(model)
+        val jsonFromModel = LevelJson.encodeToString(model)
         assertEquals(jsonFromModel, modelJson)
     }
 
     @Test
     fun deserializeEnum() {
-        val modelFromJson = Json.decodeFromString<TestModel>(modelJson)
+        val modelFromJson = LevelJson.decodeFromString<TestModel>(modelJson)
         assertEquals(modelFromJson, model)
     }
 }

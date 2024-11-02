@@ -2,29 +2,22 @@ package com.akari.levelcat.data.model
 
 import androidx.compose.runtime.Stable
 import com.akari.levelcat.level.model.Level
-import com.akari.levelcat.level.model.component.LevelProperty
 
 @Stable
-data class Project(
+data class ProjectSnapshot(
     val id: Long = System.nanoTime(),
+    val version: Int = Level.VERSION,
     val name: String,
     val creator: String,
+    val description: String,
     val lastModifyTime: Long = System.currentTimeMillis(),
-    val level: Level =  Level(
-        version = 1,
-        components = listOf(
-            LevelProperty(
-                creator = creator,
-                name = name,
-            )
-        )
-    )
 ) {
     companion object {
-        val Empty = Project(
-            id = 0,
+        fun Empty() = ProjectSnapshot(
             name = "",
+            version = 0,
             creator = "",
+            description = "",
             lastModifyTime = 0,
         )
     }

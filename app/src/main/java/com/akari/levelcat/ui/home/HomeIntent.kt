@@ -5,7 +5,11 @@ sealed interface HomeIntent {
         New, Clipboard, System
     }
     sealed interface CreateProject : HomeIntent {
-        data class New(val name: String, val creator: String) : CreateProject
+        data class New(
+            val name: String,
+            val creator: String,
+            val description: String
+        ) : CreateProject
         data object Clipboard : CreateProject
         data object Saf : CreateProject
     }

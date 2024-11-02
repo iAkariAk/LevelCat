@@ -23,8 +23,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.akari.levelcat.data.model.Project
-import com.akari.levelcat.level.model.Level
+import com.akari.levelcat.data.model.ProjectSnapshot
 import com.akari.levelcat.level.util.InputPatterns.NotBlank
 import com.akari.levelcat.ui.LevelcatTopAppBar
 import com.akari.levelcat.ui.component.*
@@ -105,7 +104,7 @@ fun HomeScreen(
 @Composable
 private fun CreateProjectFab(
     intentDialogHostState: AlertDialogHostState<HomeIntent>,
-    onCreateProject: (Project) -> Unit,
+    onCreateProject: (ProjectSnapshot) -> Unit,
     onImportProjectFromClipboard: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -128,7 +127,7 @@ private fun CreateProjectFab(
 
 
 private suspend fun HomeIntentDialogHostState.alertSelectCreateMode(
-    onCreateProject: (Project) -> Unit,
+    onCreateProject: (ProjectSnapshot) -> Unit,
     onImportProjectFromClipboard: () -> Unit
 ) = coroutineScope {
     val result = alert(
@@ -169,20 +168,21 @@ private suspend fun HomeIntentDialogHostState.alertSelectCreateMode(
 }
 
 private suspend fun HomeIntentDialogHostState.alertForNew(
-    onCreateProject: (Project) -> Unit,
+    onCreateProject: (ProjectSnapshot) -> Unit,
 ) {
     val result = alert(
-        title = { Text("Create Project") },
+        title = { Text("Create ProjectSnapshot") },
         text = {
             var name by mutableStateArgument { "" }
             var creator by mutableStateArgument { "" }
+            var description by mutableStateArgument { "" }
             Column {
                 OutlinedPatternedTextField(
                     modifier = Modifier.fillMaxWidth(),
                     pattern = NotBlank,
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Project Name") }
+                    label = { Text("ProjectSnapshot Name") }
                 )
                 OutlinedPatternedTextField(
                     modifier = Modifier
@@ -193,19 +193,30 @@ private suspend fun HomeIntentDialogHostState.alertForNew(
                     onValueChange = { creator = it },
                     label = { Text("Creator") }
                 )
+                OutlinedPatternedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    pattern = NotBlank,
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") }
+                )
             }
         },
         transform = {
             val name by mutableStateArgument<String>()
             val creator by mutableStateArgument<String>()
-            HomeIntent.CreateProject.New(name, creator)
+            val description by mutableStateArgument<String>()
+            HomeIntent.CreateProject.New(name, creator, description)
         }
     )
     if (result is AlertResult.Confirmed) {
         val intent = result.value
-        val project = Project(
+        val project = ProjectSnapshot(
             name = intent.name,
             creator = intent.creator,
+            description = intent.description,
         )
         onCreateProject(project)
     }
@@ -213,7 +224,7 @@ private suspend fun HomeIntentDialogHostState.alertForNew(
 
 @Composable
 private fun ProjectItem(
-    item: Project,
+    item: ProjectSnapshot,
     modifier: Modifier = Modifier,
     onOpenProject: () -> Unit = {},
     onDeleteProject: () -> Unit = {},
@@ -277,12 +288,12 @@ private fun ProjectItem(
 @Preview
 @Composable
 private fun PreviewProjectItem() {
-    val item = Project(
+    val item = ProjectSnapshot(
         id = System.nanoTime(),
-        name = "Alexandria Bell",
-        creator = "gravida",
+        name = "Example",
+        creator = "Akari",
+        description = "Jellyfish as fish",
         lastModifyTime = 19323400035L,
-        level = Level.Empty
     )
     ProjectItem(
         modifier = Modifier

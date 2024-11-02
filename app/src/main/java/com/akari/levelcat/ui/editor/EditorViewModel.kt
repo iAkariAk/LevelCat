@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.akari.levelcat.data.model.Project
+import com.akari.levelcat.data.model.ProjectSnapshot
 import com.akari.levelcat.data.repository.ProjectRepository
 import com.akari.levelcat.level.model.Level
 import com.akari.levelcat.level.model.component.ComponentState
@@ -23,7 +23,6 @@ import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,7 +38,7 @@ class EditorViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             WhileSubscribed(5000),
-            Project.Empty
+            ProjectSnapshot.Empty()
         )
 
     private val mutableComponents =
@@ -47,18 +46,16 @@ class EditorViewModel @Inject constructor(
 
     //    private var components by mutableStateOf(mapOf<KClass<out Component>, Component>())
     val editorUiState = combine(
-        project.map { it.id },
-        project.map { it.name },
-        project.map { it.creator },
-        project.map { it.level.version },
+        project,
         snapshotFlow { mutableComponents.toMap() }
-    ) { id, name, creator, version, components ->
+    ) { project, components ->
         EditorUiState(
-            id,
-            name,
-            creator,
-            version,
-            components.values.toList()
+            projectId = project.id,
+            projectName = project.name,
+            projectDescription = project.description,
+            projectCreator = project.creator,
+            projectMinSdk = project.version,
+            components = components.values.toList(),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -69,7 +66,7 @@ class EditorViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             project.collectLatest {
-                val initialMap = project.value.level.components
+                val initialMap = projectRepository.openProjectLevel(it.id).components
                     .associate {
                         val state = it.asState()
                         state::class to state
@@ -103,8 +100,9 @@ class EditorViewModel @Inject constructor(
     fun save() = viewModelScope.launch {
         val editorUiState = editorUiState.value
         if (editorUiState.isSavable()) {
-            val project = editorUiState.toProject()
-            projectRepository.updateProject(project)
+            val project = editorUiState.toProjectSnapshot()
+            val level = editorUiState.toLevel()
+            projectRepository.updateProject(project, level)
             logger.debug("Saved: $project")
         } else {
             showSnackbar(
@@ -120,7 +118,8 @@ data class EditorUiState(
     val projectId: Long,
     val projectName: String,
     val projectCreator: String,
-    val projectSdkVersion: Int,
+    val projectMinSdk: Int,
+    val projectDescription: String,
     val components: List<ComponentState<*>>,
 ) {
     fun isSavable() = components.all(ComponentState<*>::isValidated)
@@ -130,25 +129,33 @@ data class EditorUiState(
             projectId = 0,
             projectName = "",
             projectCreator = "",
-            projectSdkVersion = 0,
+            projectDescription = "",
+            projectMinSdk = 0,
             components = emptyList()
         )
     }
 }
 
-fun EditorUiState.toProject(): Project {
+fun EditorUiState.toProjectSnapshot(): ProjectSnapshot {
     val levelProperty = components
         .find { it is LevelPropertyState }
         ?.toComponent() as? LevelProperty
-    return Project(
+    return ProjectSnapshot(
         id = projectId,
         name = levelProperty?.name ?: projectName,
+        version = projectMinSdk,
         creator = levelProperty?.creator ?: projectCreator,
+        description = projectDescription,
         lastModifyTime = System.currentTimeMillis(),
-        level = Level(
-            version = projectSdkVersion,
-            components = components.map(ComponentState<*>::toComponent)
-        )
+    )
+}
+
+
+
+fun EditorUiState.toLevel(): Level {
+    return Level(
+        version = projectMinSdk,
+        components = components.map(ComponentState<*>::toComponent)
     )
 }
 

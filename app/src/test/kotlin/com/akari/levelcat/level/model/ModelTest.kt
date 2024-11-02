@@ -1,5 +1,6 @@
 package com.akari.levelcat.level.model
 
+import com.akari.levelcat.level.LevelCodec
 import com.akari.levelcat.level.model.component.LevelProperty
 import com.akari.levelcat.level.model.component.PlantVaseCount
 import com.akari.levelcat.level.model.component.VaseLevel
@@ -7,8 +8,6 @@ import com.akari.levelcat.level.model.component.ZombieVaseCount
 import com.akari.levelcat.level.model.constant.BackgroundType
 import com.akari.levelcat.level.model.constant.SeedType
 import com.akari.levelcat.level.model.constant.ZombieType
-import com.akari.levelcat.level.util.Json
-import kotlinx.serialization.encodeToString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -44,7 +43,7 @@ class ModelTest {
                         }
                     ]
                 }""".trimIndent()
-        val encodedJson = Json.encodeToString(model)
+        val encodedJson = LevelCodec.toJson(model)
         assertEquals(encodedJson, json)
     }
 
@@ -90,8 +89,8 @@ class ModelTest {
                 )
             )
         )
-        val decodedJson = Json.decodeFromString<Level>(json)
-        assertEquals(decodedJson, model)
+        val encodeJson = LevelCodec.fromJson(json)
+        assertEquals(encodeJson, model)
     }
 
     @Test
@@ -140,7 +139,7 @@ class ModelTest {
                 )
             ),
         )
-        val encodedModel = Json.encodeToString(model)
+        val encodedModel = LevelCodec.toJson(model)
         val json = """
             {
                 "Version": 1,
@@ -201,7 +200,7 @@ class ModelTest {
         """.trimIndent()
         assertEquals(json, encodedModel)
 
-        val decodedJson = Json.decodeFromString<Level>(json)
+        val decodedJson = LevelCodec.fromJson(json)
         assertEquals(model, decodedJson)
     }
 }
